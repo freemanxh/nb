@@ -41,6 +41,13 @@ REPL Interaction
 <sub>3</sub>
 <sup>2</sup>
 
+4、python函数
+不定长参数
+*args     *表示将未命名的参数以元组的形式传入  f1(1,2,3,4)
+**kwargs  **表示将命名参数以字典的形式传入    f2(a=5,b=6,c=7)
+
+
+
 
 
 
