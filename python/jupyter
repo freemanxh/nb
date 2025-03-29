@@ -6,3 +6,38 @@ REPL Interaction
  ctrl+shift+M  merge below
 
  ctrl+shift+c  
+ b insert cell
+
+3.markdown
+3.1 标题
+# ## ### 
+3.2 段落
+空行
+3.3 分隔线
+***
+---
+3.4 字体
+** * *** ~~
+3.5 超链接
+[文字](http://www.sina.com.cn "alt text descript")
+3.6 图片
+![图片alt](图片地址 "图片title")
+3.7 块引用
+块引用正文
+> 块引用文字
+> 块引用文字
+3.8 列表
+- + * 为无序列表
+1. 2. 3. 为有序列表
+3.9 表格 
+列名 | 列名 | 列名
+:- | :-:  | -:
+内容| 内容 | 内容
+3.10 代码
+``` 4个空格 tab
+3.11 html
+<kbd>Ctrl</kbd>
+<br/>
+<sub>3</sub>
+<sup>2</sup>
+
