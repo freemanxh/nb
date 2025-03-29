@@ -1,1 +1,8 @@
-REPL交互方式
+REPL Interaction
+1. In command mode, M can be switched to markdown mode, and Y can be switched to Code type
+2. 
+ ctrl+shift+-  split cell
+ ctrl+backspace  merge above
+ ctrl+shift+M  merge below
+
+ ctrl+shift+c  
