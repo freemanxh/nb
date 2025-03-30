@@ -75,6 +75,18 @@ python3 -m pip install jupyter-nbextensions-configurator==0.6.1
 jupyter contrib nbextension install --user
 jupyter nbextensions_configurator enable --user
 
+扩展配置
+Collapsible Headings
+Codefolding
+Freeze
+Hide Header
+Highlight selected word
+Hinterland
+nbTranslate
+Scratchpad
+Table of Contents
+
+
 
 
 
