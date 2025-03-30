@@ -28,9 +28,9 @@ conda config --set auto_activate_base false
 /home/username/.condarc文件  #channels的顺序决定取组件的顺序
 ssl_verify: true
 channels:
-  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge/
-  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
   - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge/
   - defaults
 channel_priority: strict
 show_channel_urls: true
@@ -52,6 +52,32 @@ auto_activate_base: false
 
 8) 更新:
 conda update conda
+
+9)管理包
+conda list
+conda install packageName
+conda search packageName
+conda uninstall packageName
+
+以下是一些常用的第三方包，用于miniconda
+    科学计算相关
+        numpy
+        pandas
+        scipy
+        scikit-learn
+    绘图相关
+        matplotlib
+        seaborn
+    Jupyter Notebook相关
+        jupyter
+        notebook
+        ipykernel
+        nb_conda_kernels
+    其他
+        beautifulsoup4
+        reportlab
+
+
 
 更新第三方包:（小心用）
 conda upgrade --all
