@@ -3,6 +3,21 @@ jupyter
 pip install jupyter ipykernel
 jupyter notebook --generate-config --allow-root
 
+2、配置
+命令行改端口
+jupyter notebook --NotebookApp.port=9999
+配置文件
+./jupyter/jupyter_notebook_config.py   #通过jupyter notebook --generate-config 重新生成
+查看token
+jupyter notebook list
+设置口令
+jupyter notebook password  #口令值保存在jupyter_notebook_config.json中
+ssl支持
+生成自签证书：openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout HiKey.key -out HiCert.pem
+启动：jupyter notebook --certfile=HiCert.pem --keyfile HiKey.key
+
+
+
 -----------------------------------------------------------
 
 REPL Interaction
