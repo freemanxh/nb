@@ -1,6 +1,16 @@
 
 1、conda 安装
-1）清华镜像下载：  https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/
+
+下载:
+https://www.anaconda.com/download/success
+https://repo.anaconda.com/archive/Anaconda3-2024.10-1-Linux-x86_64.sh
+https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+
+
+1）清华镜像下载：  
+https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/
+https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/
+
 2）安装不需要sudo
 运行安装脚本：bash Anaconda3-2023.03-1-Linux-x86_64.sh
 
