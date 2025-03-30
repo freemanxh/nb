@@ -65,10 +65,10 @@ https://stackoverflow.com/questions/49647705/jupyter-nbextensions-does-not-appea
 7.1 jupyter_contrib_nbextensions
 python3 -m pip install jupyter notebook==6.5.4 或 python3 -m pip install --upgrade notebook==6.5.4
 python3 -m pip uninstall traitlets
-python3 -m pip install traitlets==5.9.0
+python3 -m pip install --upgrade traitlets==5.9.0
 python3 -m pip install --upgrade ipython==8.15.0
 python3 -m pip install jupyter_contrib_nbextensions==0.7.0
-python3 -m pip install jupyter-nbextensions-configurator==0.6.4
+python3 -m pip install jupyter-nbextensions-configurator==0.6.1
 
 jupyter contrib nbextension install --user
 jupyter nbextensions_configurator enable --user
