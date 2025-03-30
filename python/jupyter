@@ -17,7 +17,26 @@ ssl支持
 启动：jupyter notebook --certfile=HiCert.pem --keyfile HiKey.key
 
 
+=====================================================================================
+jupyterlab
+python 3.12
+jupyterlab
+jupyter_nbextensions_configurator
 
+plug-inc
+vim
+jupyterlab-git
+jupyterlab-github
+jupyterlab-toc
+jupyterlab-lsp
+jupyterlab-execute-time
+jupyterlab-spreadsheet
+
+variable-inspector
+sql
+
+matplotlib
+drawio
 -----------------------------------------------------------
 
 REPL Interaction
