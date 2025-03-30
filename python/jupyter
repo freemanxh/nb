@@ -1,3 +1,10 @@
+jupyter 
+1、在pycharm中使用
+pip install jupyter ipykernel
+jupyter notebook --generate-config --allow-root
+
+-----------------------------------------------------------
+
 REPL Interaction
 1. In command mode, M can be switched to markdown mode, and Y can be switched to Code type
 2. 
