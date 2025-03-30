@@ -56,8 +56,6 @@ REPL Interaction
 5、python中的包，不是任何一个目录结构都是一个包，在Python中，每个包目录中必须包括一个 __init__.py 的文件。
 
 6、ML,DL的开源库  TensorFlow，CNTK，SystemML，DeepMind Lab | Theano、Caffe、Torch 和 SciKit-learn | Dask Numpy Pandas Numba | Matplotlib Bokeh Datashader HoloViews
-成都市羊西线蜀西路83号（铁路桥旁）
-成都市城北熊猫基地旁五龙山路189号
 
 分类算法是有监督学习，需要训练集与测试集。
 聚类算法是无监督学习，只需要告诉相似类的算法。
@@ -68,9 +66,9 @@ https://stackoverflow.com/questions/49647705/jupyter-nbextensions-does-not-appea
 python3 -m pip install jupyter notebook==6.5.4 或 python3 -m pip install --upgrade notebook==6.5.4
 python3 -m pip uninstall traitlets
 python3 -m pip install traitlets==5.9.0
-#python3 -m pip install --upgrade ipython==8.0.0   8.15.0
+python3 -m pip install --upgrade ipython==8.15.0
 python3 -m pip install jupyter_contrib_nbextensions==0.7.0
-python3 -m pip install jupyter-nbextensions-configurator==0.6.1
+python3 -m pip install jupyter-nbextensions-configurator==0.6.4
 
 jupyter contrib nbextension install --user
 jupyter nbextensions_configurator enable --user
