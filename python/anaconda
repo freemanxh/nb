@@ -69,6 +69,7 @@ conda activate python27
 
 3)删除一个env
 退到base中
+conda remove -n "envName" --all 
 conda env remove --name env_name
 conda clean --all
 rm -rf ~/anaconda3/envs/myenv
