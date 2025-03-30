@@ -64,7 +64,15 @@ REPL Interaction
 
 7、扩展包
 7.1 jupyter_contrib_nbextensions
-pip install jupyter_contrib-nbextensions
+python3 -m pip install jupyter notebook==6.5.2 或 python3 -m pip install --upgrade notebook==6.5.2
+python3 -m pip uninstall traitlets
+python3 -m pip install traitlets==5.9.0
+python3 -m pip install --upgrade ipython==8.0.0
+python3 -m pip install jupyter_contrib_nbextensions==0.7.0
+python3 -m pip install jupyter-nbextensions-configurator==0.6.1
+
+jupyter contrib nbextension install --user
+jupyter nbextensions_configurator enable --user
 
 
 
