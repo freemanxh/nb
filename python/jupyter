@@ -25,7 +25,8 @@ python 3.12
 jupyterlab
 jupyter_nbextensions_configurator
 
-plug-inc
+plug-inc:
+
 jupyterlab-vim
 jupyterlabcodetoc
 jupyterlab-lsp
