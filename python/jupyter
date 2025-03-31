@@ -26,20 +26,21 @@ jupyterlab
 jupyter_nbextensions_configurator
 
 plug-inc
-vim
-jupyterlab-git
-jupyterlab-github
-jupyterlab-toc
+jupyterlab-vim
+jupyterlabcodetoc
 jupyterlab-lsp
 jupyterlab-execute-time
 jupyterlab-spreadsheet
+jupyterlab-spreadsheet-editor
 
+jupyterlab-git
+jupyterlab-github
+
+jupyterlab-sql-explorer
 jupyterlab-sql-editor
 jupyterlab-sql-plugin
-jupyterlabs-sql-codemirror
 
 variable-inspector
-sql
 
 matplotlib
 drawio
