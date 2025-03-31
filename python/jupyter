@@ -29,6 +29,9 @@ plug-inc:
 https://blog.csdn.net/pumpkin84514/article/details/140423167
 https://jupyterlab-contrib.github.io/extensions.html
 
+需要安装nodejs环境，版本20.0以上，安装方式用绿色的，同java
+https://www.nodejs.com.cn/download_current.html
+
 jupyterlab-vim
 jupyterlabcodetoc
 jupyterlab-lsp
