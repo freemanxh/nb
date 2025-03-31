@@ -26,6 +26,8 @@ jupyterlab
 jupyter_nbextensions_configurator
 
 plug-inc:
+https://blog.csdn.net/pumpkin84514/article/details/140423167
+https://jupyterlab-contrib.github.io/extensions.html
 
 jupyterlab-vim
 jupyterlabcodetoc
@@ -33,6 +35,11 @@ jupyterlab-lsp
 jupyterlab-execute-time
 jupyterlab-spreadsheet
 jupyterlab-spreadsheet-editor
+
+jupyterlab_code_formartter
+Spellchecker
+Collapsable Headings 
+Code Formatter
 
 jupyterlab-git
 jupyterlab-github
@@ -42,6 +49,10 @@ jupyterlab-sql-editor
 jupyterlab-sql-plugin
 
 variable-inspector
+
+
+system monitor
+kite
 
 matplotlib
 drawio
