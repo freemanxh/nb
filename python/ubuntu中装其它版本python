@@ -4,6 +4,8 @@
 libncurses5-dev libgdbm-dev libnss3-dev libsqlite3-dev \
 libreadline-dev libffi-dev curl libbz2-dev wget
 
+如果出现问题，sudo aptitude install 
+
 3、wget https://www.python.org/ftp/python/3.12.0/Python-3.12.0.tgz  #可以在mirrors中下。https://mirrors.aliyun.com/python-release/source/
 tar -xvzf Python-3.12.0.tgz
 cd Python-3.12.0
