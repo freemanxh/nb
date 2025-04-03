@@ -19,6 +19,8 @@ ssl支持
 
 https://www.oryoy.com/news/qing-song-shang-shou-docker-yi-jian-an-zhuang-jupyterhub-kai-qi-gao-xiao-shu-ju-ke-xue-zhi-lv.html
 
+===================================================================================
+
 如何让jupyter lab能让局域网的其它机器能访问使用
 jupyter lab --generate-config
 ~/.jupyter/jupyter_lab_config.py
