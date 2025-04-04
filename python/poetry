@@ -13,6 +13,13 @@ poetry env use /home/xuhui/anaconda3/envs/jupyterlab/bin/python
 poetry整合了virtualenv。会查看是否正在使用env，如果没有，会新建一个virtualenv。
 poetry env activate 应该进入相应的项目目录
 
+不建议用poetry shell了，直接run # poetry run flask run
+实在要用 source $(poetry env info --path)/bin/activate 不建议
+
+
+
+
+
 4、命令
 new
 init 基于已有的项目代码创建pyproject.toml文件，支持交互式填写。
@@ -27,7 +34,10 @@ add
  poetry add django@^4.2.9   # >= 4.2.9 and < 5.0.0   ***
  poetry add django@~4.2.9   # >= 4.2.9 and < 4.3.0
  poetry add "django >= 4.2.9"   #  >= 4.2.9 没有上限
-remove 执行删除虚拟环境时，需要指定对应的解析器版本 poetry env remove python3
+remove 
+ 执行删除虚拟环境时，需要指定对应的解析器版本 poetry env remove python3
+ poetry env remove $(poetry env info --path)
+ 
 show 查看具体依赖库信息。
  poetry show --tree
 build 
@@ -42,6 +52,8 @@ build
 poetry config --list
 virtualenvs.create = true若改成false，則可以停止 Poetry 在「偵測不到虛擬環境時會自行建立」的行為模式，但建議還是不要更動。
 virtualenvs.in-project = false #使用指令 poetry config virtualenvs.in-project true 这样就把虚拟环境建在项目中了。
+source .venv/bin/activate
+
 
 6、改源
 pyproject.toml文件中
@@ -55,6 +67,10 @@ priority = "primary"
  poetry export -f requirements.txt -o requirements.txt --without-hashes
  如果要包含dev的。
  poetry export -f requirements.txt -o requirements.txt --without-hashes --dev 或 (--with dev)
+
+8、在已经有源码的项目中重现poetry虚拟环境
+ 1、poetry env use python
+ 2、poetry install 
 
 
 
