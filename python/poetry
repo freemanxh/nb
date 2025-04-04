@@ -63,6 +63,10 @@ name = "tsinghua"
 url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple/"
 priority = "primary"
 
+# 配置镜像源（可选，国内用户推荐）
+poetry config repositories.tsinghua https://pypi.tuna.tsinghua.edu.cn/simple
+
+
 7、输出 requirements.txt
  poetry export -f requirements.txt -o requirements.txt --without-hashes
  如果要包含dev的。
@@ -71,6 +75,12 @@ priority = "primary"
 8、在已经有源码的项目中重现poetry虚拟环境
  1、poetry env use python
  2、poetry install 
+
+9、重置虚拟环境
+poetry install --remove-untracked
+
+poetry cache clear . --all
+
 
 
 
