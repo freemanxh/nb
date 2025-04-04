@@ -1,0 +1,43 @@
+1、安装
+curl -sSL https://install.python-poetry.org | python3 -
+装完需要加到PATH中 export PATH="/home/xuhui/.local/bin:$PATH
+poetry self update
+2、poetry new virtualenv
+
+3、poetry env list
+指定python版本
+poetry env use /home/xuhui/anaconda3/envs/jupyterlab/bin/python
+
+还有一个方法，更改了pyproject.toml中的python版本后，需要更新项目的依赖项。poetry update
+
+4、命令
+new
+init 基于已有的项目代码创建pyproject.toml文件，支持交互式填写。
+install
+ poetry install --no-dev 只安装非development环境的依赖。
+update
+add 
+ poetry add flask 最新的flask
+ poetry add pytest --dev 指定为开发依赖
+ poetry add flask=2.22.0 具体的版本
+remove 执行删除虚拟环境时，需要指定对应的解析器版本 poetry env remove python3
+show 查看具体依赖库信息。
+build 
+
+5、config
+poetry config --list
+
+6、改源
+pyproject.toml文件中
+# 添加清华镜像，就是两个[[]]别删。
+[[tool.poetry.source]]
+name = "tsinghua"
+url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple/"
+priority = "primary"
+
+
+
+
+
+
+
