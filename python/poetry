@@ -10,22 +10,38 @@ poetry env use /home/xuhui/anaconda3/envs/jupyterlab/bin/python
 
 还有一个方法，更改了pyproject.toml中的python版本后，需要更新项目的依赖项。poetry update
 
+poetry整合了virtualenv。会查看是否正在使用env，如果没有，会新建一个virtualenv。
+poetry env activate 应该进入相应的项目目录
+
 4、命令
 new
 init 基于已有的项目代码创建pyproject.toml文件，支持交互式填写。
 install
  poetry install --no-dev 只安装非development环境的依赖。
-update
+update 更新依赖
 add 
  poetry add flask 最新的flask
- poetry add pytest --dev 指定为开发依赖
- poetry add flask=2.22.0 具体的版本
+ poetry add pytest --dev 指定为开发依赖  -D
+ poetry add black --group dev 或 poetry add black -G dev
+ poetry add flask==2.22.0 具体的版本   ***
+ poetry add django@^4.2.9   # >= 4.2.9 and < 5.0.0   ***
+ poetry add django@~4.2.9   # >= 4.2.9 and < 4.3.0
+ poetry add "django >= 4.2.9"   #  >= 4.2.9 没有上限
 remove 执行删除虚拟环境时，需要指定对应的解析器版本 poetry env remove python3
 show 查看具体依赖库信息。
+ poetry show --tree
 build 
+使用requirements.txt为管理依赖，并迁移到Poerty   #poetry run pip install -r requirements.txt
+
+如果手动改了pyproject.toml文件的内容，必须要进行lock同步，poetry lock，然后，用poetry install来安装套件。
+
+
+
 
 5、config
 poetry config --list
+virtualenvs.create = true若改成false，則可以停止 Poetry 在「偵測不到虛擬環境時會自行建立」的行為模式，但建議還是不要更動。
+virtualenvs.in-project = false #使用指令 poetry config virtualenvs.in-project true 这样就把虚拟环境建在项目中了。
 
 6、改源
 pyproject.toml文件中
@@ -34,6 +50,13 @@ pyproject.toml文件中
 name = "tsinghua"
 url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple/"
 priority = "primary"
+
+7、输出 requirements.txt
+ poetry export -f requirements.txt -o requirements.txt --without-hashes
+ 如果要包含dev的。
+ poetry export -f requirements.txt -o requirements.txt --without-hashes --dev 或 (--with dev)
+
+
 
 
 
