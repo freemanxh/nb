@@ -1,0 +1,177 @@
+准备：
+1、破解文件：atlassian-agent.jar
+https://blog.houkunlin.cn/2024/06/27/atlassian-jira-software-crack/atlassian-agent.jar
+https://github.com/haxqer/jira/blob/build-your-own/docker/jira/atlassian-agent.jar
+放到相应的目录，并mapping到容器中。
+
+1.1、crowd破解版docker的制作
+1.1.1、下载crowd5.0.6  (atlassian/crowd:5.0.6)
+下载atlassian-agent.jar，和jira和confluence用一样的。
+
+1.1.2、自定义Docker镜像
+Dockerfile 
+
+FROM atlassian/crowd:5.0.6
+# 将破解工具复制到镜像中
+COPY atlassian-agent.jar /opt/atlassian/crowd/
+#数据库驱动文件，可以从jira docker镜像中取得
+COPY mysql-connector-java-8.0.22.jar /opt/atlassian/crowd/apache-tomcat/lib/
+# 设置环境变量（关键步骤）
+ENV JAVA_OPTS="-javaagent:/opt/atlassian/crowd/atlassian-agent.jar"
+
+1.1.3、docker build -t crowd-crack:5.0.6 .
+
+2、启动后，要把容器全给删除掉
+把相应配置下的文件给重写。
+./mysql/conf/my.conf
+[mysqld]
+default-storage-engine=INNODB
+character-set-server=utf8mb4
+collation-server=utf8mb4_bin
+transaction-isolation=READ-COMMITTED
+innodb_log_file_size=2G
+sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+
+3、重启mysql服务后。
+docker exec -it mysql /bin/bash
+mysql -uroot -p@Dmin123##
+执行以下建表语句
+CREATE DATABASE jiradb CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+CREATE DATABASE confluencedb CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+CREATE DATABASE crowddb CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+CREATE USER 'jira'@'%' IDENTIFIED BY 'jira_password';
+CREATE USER 'confluence'@'%' IDENTIFIED BY 'confluence_password';
+CREATE USER 'crowd'@'%' IDENTIFIED BY 'crowd_password';
+GRANT ALL PRIVILEGES ON jiradb.* TO 'jira'@'%';
+GRANT ALL PRIVILEGES ON confluencedb.* TO 'confluence'@'%';
+GRANT ALL PRIVILEGES ON crowddb.* TO 'crowd'@'%';
+set global log_bin_trust_function_creators = 1; 
+FLUSH PRIVILEGES;
+
+4、把jira和confluence容器中的setenv.sh给docker cp出来，并放到相应的地方修改后做mapping。
+4.1 sudo docker cp jira:/opt/jira/bin/setenv.sh ./jira/jira_setenv.sh
+找到 export CATALINA_OPTS 位置 下面 增加。
+export JAVA_OPTS="-javaagent:/opt/jira/atlassian-agent.jar  ${JAVA_OPTS}"
+
+4.2 sudo docker cp confluence:/opt/confluence/bin/setenv.sh  ./confluence/confluence_setenv.sh
+找到 export CATALINA_OPTS 下面增加
+export JAVA_OPTS="-javaagent:/opt/confluence/atlassian-agent.jar  ${JAVA_OPTS}"
+
+5、激活：
+5.1
+docker exec -it jira bash
+java -jar /opt/jira/atlassian-agent.jar  -d -p jira -m xuhuiok@sina.com -n xuhui -o http://192.168.0.91:18080 -s B169-PKM0-CCXS-F5DK
+# java -jar 【/opt/jira/atlassian-agent.jar 此路径需要改为自己docker-compose.yml 挂载路径】  -d -p 【jira服务名称】 -m aaa@bbb.com -n my_name -o 【https://zhile.io 可替换成自己的域名】 -s  【###-BLB0 jira服务器ID】
+把生成的license 复制到 页面中激活
+5.2
+docker exec -it confluence bash
+java -jar /opt/confluence/atlassian-agent.jar  -d -p conf -m aaa@bbb.com -n my_name -o http://192.168.0.91:18090 -s BI8G-125Q-YSMH-2RAC
+# java -jar 【/opt/confluence/atlassian-agent.jar 此路径需要改为自己docker-compose.yml 挂载路径】  -d -p 【conf服务名称】 -m aaa@bbb.com -n my_name -o 【https://zhile.io 可替换成自己的域名】 -s  【###-A-BLB0 confluence服务器ID
+设置数据库
+jdbc:mysql://192.168.0.91:3306/confluencedb?sessionVariables=transaction_isolation='READ-COMMITTED'&useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+5.3
+crowd激活(在宿主机上运行)
+docker exec crowd java -jar /opt/atlassian/crowd/atlassian-agent.jar \
+  -p crowd \
+  -m xuhuiok@sina.com \
+  -n ymkj_crowd \
+  -o http://192.168.0.91:18095 \
+  -s BRVH-JGNN-KVHZ-GBE8
+设置数据库
+jdbc:mysql://192.168.0.91:3306/crowddb?autoReconnect=true&characterEncoding=utf8&useUnicode=true
+
+
+
+6、jira_confluence.yaml
+
+version: '3'
+services:
+  # MySQL 8 数据库服务
+  mysql:
+    image: swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/mysql/mysql-server:8.0
+    container_name: mysql
+    ports:
+      - 3306:3306
+    environment:
+      TZ: Asia/Shanghai  # 设置时区
+      MYSQL_ROOT_PASSWORD: '@Dmin123##'  # 修改为强密码
+    volumes:
+      - ./mysql/data:/var/lib/mysql  # 持久化 MySQL 数据
+      - ./mysql/logs:/var/log/mysql
+      - ./mysql/conf/my.conf:/etc/mysql/my.cnf
+    restart: unless-stopped
+      #   command: 
+      # --default-authentication-plugin=mysql_native_password  # 解决 MySQL 8 认证兼容性问题创建jira和confluence数据库
+  # jira 服务
+  jira:
+    image: swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/haxqer/jira:10.3.2
+    container_name: jira
+#    privileged: true
+    user: root
+    ports:
+      - 18080:8080
+    volumes:
+#      - /opt/docker/jira/data:/var/atlassian/application-data/jira
+      - ./jira/data:/var/jira
+      - ./jira/atlassian-agent.jar:/opt/jira/atlassian-agent.jar
+      - ./jira/jira_setenv.sh:/opt/jira/bin/setenv.sh
+        #      - ./jira/mysql-connector-j-8.4.0.jar:/opt/jira/atlassian-jira/WEB-INF/lib/mysql-connector-j-8.0.33.jar
+    environment:
+      TZ: Asia/Shanghai
+      JVM_MINIMUM_MEMORY: 1024m
+      JVM_MAXIMUM_MEMORY: 3072m
+    depends_on:
+      - mysql
+    restart: unless-stopped
+  confluence:
+    image: swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/haxqer/confluence:9.2.1
+    container_name: confluence
+#    privileged: true
+    user: root
+    ports:
+      - 18090:8090
+      - 18091:8091
+    volumes:
+      - ./confluence/data:/var/confluence
+      - ./confluence/atlassian-agent.jar:/opt/confluence/atlassian-agent.jar
+      - ./confluence/confluence_setenv.sh:/opt/confluence/bin/setenv.sh
+        #      - ./confluence/mysql-connector-j-8.4.0.jar:/opt/confluence/confluence/WEB-INF/lib/mysql-connector-j-8.0.33.jar
+    environment:
+      TZ: Asia/Shanghai  # 设置时区
+      JVM_MINIMUM_MEMORY: 1024m
+      JVM_MAXIMUM_MEMORY: 3072m
+    depends_on:
+      - mysql
+    restart: unless-stopped
+  crowd:
+    image: crowd-crack:5.0.6
+    container_name: crowd
+#    privileged: true
+    user: root
+    ports:
+      - 18095:8095
+    volumes:
+      - ./crowd/data:/var/atlassian/application-data/crowd
+    environment:
+      TZ: Asia/Shanghai  # 设置时区
+      JVM_MINIMUM_MEMORY: 1024m
+      JVM_MAXIMUM_MEMORY: 3072m
+      JAVA_OPTS: "-javaagent:/opt/atlassian/crowd/atlassian-agent.jar"
+    depends_on:
+      - mysql
+    restart: unless-stopped
+
+
+====================================================================================
+配置jira和confluence互访。
+1、在confluence中，管理->应用程序连接->添加jira相关信息
+2、在jira中，管理->应用程序->集成->应用程序链接->添加confluence相关信息
+3、在Jira中，管理->用户管理->Jira服务服务器->添加confluence-sync,ip地址为72.19.0.2  192.168.0.91
+4、在confluence中，用户&安全->用户目录->添加Jira Server->服务器：http://172.19.0.3:8080
+
+jira服务器：服务器URL必须根据容器网络情况填写，比如常见的bridge模式连接的话，必须填写bridge上的地址，比如我的就是容器的ip地址+端口172.17.0.3:8080
+如：http://172.19.0.3:8080
+
+https://www.cnblogs.com/rockcode777/p/12979718.html
+https://www.cnblogs.com/iancloud/p/15015483.html
+https://www.cnblogs.com/easonscx/p/10712033.html
