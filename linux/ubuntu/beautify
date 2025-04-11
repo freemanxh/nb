@@ -1,0 +1,30 @@
+1、
+sudo apt install chrome-gnome-shell
+sudo apt install gnome-shell-extensions  
+sudo apt install gnome-shell-extension-manager
+
+2、https://extensions.gnome.org 
+https://extensions.gnome.org/local/
+GNOME Shell integration 在firefox中添加add
+
+NetSpeed (ubuntu22.04 24.04 不能用)
+Net speed Simplified
+workspace indicator
+Frippery Move Clock 时间靠右
+TopIcons Plus  (TopIconsFix)
+no title bar
+
+Sound Input & Output Device Chooser (24.04不)
+unite   (让最上面的信息栏放软件的标题) (24.04不)
+NVIDIA GPU Stats Tool 
+Screenshot Tool   (need test)
+Nano System Monitor
+Vitals
+
+
+3）安装字体
+字体推荐使用JetBrains的字体 JetBrains Mono。
+该字体据说是专为改善看代码体验而生。
+在JetBrains官网 https://www.jetbrains.com/lp/mono/ 下载。
+之后将其解压放在 /usr/share/fonts 文件夹中。
+打开gnome-tweaks选择字体进行更换。
