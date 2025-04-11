@@ -27,4 +27,6 @@ Vitals
 该字体据说是专为改善看代码体验而生。
 在JetBrains官网 https://www.jetbrains.com/lp/mono/ 下载。
 之后将其解压放在 /usr/share/fonts 文件夹中。
+sudo fc-cache -f -v
 打开gnome-tweaks选择字体进行更换。
+
