@@ -13,6 +13,12 @@ dingtalk
 wps
 baidupan
 
+
+
+filezilla
+gedit
+remmina 远程桌面客户端
+
 3、笔记本
 TLP 是 Linux 上一款优秀的电池自动管理工具，安装好之后就无需再进行手动干预，它可以自动帮助你进行电池优化。只需使用以下命令安装并运行 TLP 即可：
 sudo apt install tlp
