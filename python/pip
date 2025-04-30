@@ -26,3 +26,26 @@ pip install tokenizers==0.20.3 --force-reinstall  #使用 --force-reinstall 选�
 
 要导出依赖
 pip freeze > requirements.txt
+
+
+2、安装pip脚本。
+'''inst_pip_conf'''
+
+#!/bin/bash
+if [ ! -d ~/.pip ]; then
+        mkdir -p ~/.pip
+fi
+if [ -f ~/.pip/pip.conf ]; then
+        rm ~/.pip/pip.conf
+fi
+cat >> ~/.pip/pip.conf <<EOF 
+[global]
+timeout = 6000
+#index-url = http://pypi.douban.com/simple/
+#trusted-host = pypi.douban.com
+
+index-url = http://mirrors.aliyun.com/pypi/simple
+trusted-host = mirrors.aliyun.com
+EOF
+
+
