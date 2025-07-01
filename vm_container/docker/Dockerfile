@@ -24,3 +24,18 @@ RUN python3 -m pip install --upgrade pip && python3 -m pip install --default-tim
 
 
 docker build .
+
+
+=====================================================================================
+
+glpat-KAyTZrGkwa3x-
+oaBbHo5
+
+
+
+docker tag 2765 192.168.0.98:80/repo/python-base-smart:v1.0.0
+
+docker login -u admin -p Harbor_Ym@54321 http://192.168.0.98:80
+
+
+docker push 192.168.0.98:80/ym_offline/python-base-smart:v1.0.0
