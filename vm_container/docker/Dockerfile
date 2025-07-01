@@ -21,3 +21,6 @@ WORKDIR /install
 COPY requirements.txt .
 
 RUN python3 -m pip install --upgrade pip && python3 -m pip install --default-timeout=3600 --no-cache-dir -r requirements.txt --index-url http://192.168.0.83:8081/repository/pypi_group/simple --trusted-host 192.168.0.83
+
+
+docker build .
