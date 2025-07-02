@@ -5,3 +5,25 @@
 
 每次copy第一个文件到指定的地方
 find /data/docker_data/gitlab/data/backups/ | sort -r | head -n 1 | xargs -i cp {} /data_sata/gitlab_bak/
+
+
+
+
+
+#!/bin/bash
+while [ 1 ]
+do
+        r=$(ps -ef | grep ssh | grep 11434 | wc -l)
+        echo $r
+        if [ "$r" != "1"  ];then
+                echo "down 11434!"
+                $(nohup ssh -CNg -L 11434:127.0.0.1:11434 root@connect.westc.gpuhub.com -p 39566 > ssh_tunnel.log 2>&1 &)
+        fi
+        r1=$(ps -ef | grep ssh | grep 7860 | wc -l)
+        echo $r1
+        if [ "$r1" != "1"  ];then
+                echo "down 7860!"
+                $(nohup ssh -CNg -L 7860:127.0.0.1:7860 root@connect.westc.gpuhub.com -p 39566 > ssh_tunnel.log 2>&1 &)
+        fi
+        sleep 1
+done
