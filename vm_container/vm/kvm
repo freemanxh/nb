@@ -298,7 +298,7 @@ virt-clone -o kvm_name1 -n kvm_name2 -f /data/kvm/ubuntu_1_new.qcow2
 7、df -Th /   #查看虚拟机当中当前文件系统容量
 8、lvdisplay
 9、vgdisplay
-10、pvcreate /dev/vdb  #创建PV
+10、pvcreate /dev/vdb  #创建PV  如果是物理盘，得是sda1这种
 11、pvdisplay
 12、vgextend ubuntu-vg /dev/vdb #将新创建的PV /dev/vdb添加到VG ubuntu-vg当中  [ubuntu-vg ]
 13、lvextend -L +100G /dev/ubuntu-vg/lv-root  #扩容LV /dev/ubuntu-vg/lv-root  [/dev/ubuntu-vg/lv-root] 99.99G最好
