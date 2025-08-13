@@ -1,0 +1,44 @@
+vars 方法
+dir 方法
+
+__name__
+__file__
+
+__module__
+
+inspect.getmodule()
+
+__builtins__  内置模块
+
+每个模块文件都有自己独立的全局名字空间。
+sys.modules
+sys.path
+
+python -m site #查看python的引用文件路径
+
+在模块内添加__all__声明，明确指定哪些可以被星号导入的成员名字列表。
+__all__=["hello"]
+
+动态导入
+1、使用exec动态执行，从sys.modules中获取实例
+def test(name):
+    exec(f"import {name}")
+    m=sys.modules[name]
+    print(m)
+    
+test("inspect")
+
+============================================
+2、使用importlib库
+
+import importlib
+def test(name):
+    m=importlib.import_module(name)
+    print(m)
+    
+m1=sys.modules("")
+
+
+
+6.3 包
+包是用来组织模块的。
