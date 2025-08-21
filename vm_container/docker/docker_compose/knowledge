@@ -1,5 +1,7 @@
 
 
+docker 要考虑日志的大小。
+
 yaml文件中
 
 #声明持久化卷
@@ -42,6 +44,9 @@ docker-compose up backend
 
 
 
+
+=========================================================
+#健康检查
 services:
   web:
     image: nginx
@@ -50,3 +55,22 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+
+
+
+build
+
+services:
+  app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=production
+
+
+环境变量文件
+services:
+  app:
+    env_file:
+      - .env
