@@ -8,7 +8,7 @@ debian10, debianbuster
 
 以下废弃了
 sudo apt install libosinfo-bin
-osinfo-query os
+osinfo-query os 
 osinfo-query os rhel7
 
 #安装kvm
@@ -69,6 +69,31 @@ UUID=a51fe2d2-4beb-4f80-8bae-0352576a1f9d  /kvm ext4 defaults 0 1
 chown libvirt-qemu:kvm /kvm
 
 
+
+
+------------------------------------------------------
+
+nat网络
+#virt-install
+--noautoconsole: 避免安装过程立即接管你的终端。
+
+virt-install \
+    --virt-type kvm \
+    --name ubuntu_1 \
+    --ram 24567 \
+    --vcpus 8 \
+    --cpu host-passthrough,cache.mode=passthrough \
+    --disk path=/kvm/ubuntu_1.qcow2,size=200,bus=virtio,format=qcow2 \
+    --os-type=ubuntu22.04 \
+    --network network=default,model=virtio \
+    --graphics none \
+    --extra-args="console=tty0 console=ttyS0,115200" \
+    --location /home/xuhui/iso/ubuntu-22.04.2-live-server-amd64.iso,initrd=casper/initrd,kernel=casper/vmlinuz 
+
+
+    #--noautoconsole: 避免安装过程立即接管你的终端。
+
+=====================================================================================================
 
 app:
 virt-install \
@@ -180,6 +205,21 @@ virt-install \
     --network bridge=br0,model=virtio \
     --graphics vnc,password=654321,port=5902,listen=0.0.0.0 \
     --location /home/yematech/iso/ubuntu-22.04.3-desktop-amd64.iso,initrd=casper/initrd,kernel=casper/vmlinuz 
+
+
+#图形（需验证202508221）
+virt-install \
+  --name ubuntu2204-desktop \
+  --memory 8192 \
+  --vcpus 4 \
+  --disk size=50 \
+  --os-variant ubuntu22.04 \
+  --cdrom /path/to/ubuntu-22.04-desktop-amd64.iso \
+  --network network=default \
+  --graphics spice \              # 使用 SPICE 协议提供图形界面
+  --video virtio \                # 使用 VirtIO 视频驱动，性能更好
+  --channel spicevmc \            # 为 SPICE 启用剪贴板共享等
+  --noautoconsole
 
 
 #####################################################################
