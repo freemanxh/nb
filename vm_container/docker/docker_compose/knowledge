@@ -1,0 +1,52 @@
+
+
+yaml文件中
+
+#声明持久化卷
+volumes:
+  db_data:
+
+#声明网络
+networks:
+  app-network:
+    driver: bridge
+
+
+
+
+常用命令
+# 启动所有服务
+docker-compose up
+
+# 后台启动
+docker-compose up -d
+
+# 停止并删除容器
+docker-compose down
+
+# 查看运行状态
+docker-compose ps
+
+# 查看日志
+docker-compose logs
+
+# 重新构建服务
+docker-compose build
+
+# 执行命令（如进入容器）
+docker-compose exec backend bash
+
+# 启动特定服务
+docker-compose up backend
+
+
+
+
+services:
+  web:
+    image: nginx
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
