@@ -1,0 +1,109 @@
+1、kvm 的网络有 nat 或 bridge
+
+1.1 nat
+宿主机:
+/etc/netplan/00-xx.yaml
+  network:
+    version: 2
+    ethernets:
+      enp6s0:
+        dhcp4: false
+        dhcp6: false
+        optional: true 
+        addresses:
+          - 192.168.0.188/24
+        routes:
+          - to: default
+            via: 192.168.0.1
+        nameservers:
+          addresses:
+            - 192.168.0.1
+vm:
+  network:
+    version: 2
+    ethernets:
+      enp1s0:
+        dhcp4: true
+        dhcp6: false
+        optional: true
+
+#optional: true  不让进行网络配置等待。
+
+1.2 host网络
+1.2.1 确保网络default是激活状态
+virsh net-list --all
+default   active   yes         yes
+
+如果发现没有激活
+virsh net-start default
+# 设置开机自启
+virsh net-autostart default
+
+查看状态
+virsh net-info default   
+# Persistent: yes: 表示这个网络配置是持久化的，即使主机重启，它也会存在。
+virsh net-dumpxml default # 查看其完整 XML 配置
+
+kvm的nat 默认为192.168.122.x
+
+1.2.2 在vm的xml文件中，关于网络配置如下：
+    <interface type='network'>
+      <mac address='52:54:00:b0:14:c6'/>
+      <source network='default'/>
+      <model type='virtio'/>
+      <address type='pci' domain='0x0000' bus='0x01' slot='0x00' function='0x0'/>
+    </interface>
+
+
+##把bridg改为nat
+<interface type='bridge'> 将 type='bridge' 改为 type='network'。 #表示使用libvirt管理虚拟网络。
+将 <source bridge='your-bridge-name'/> 改为 <source network='default'/>。
+
+1.2.3 设置nat网络中，各个vm的static ip的方法。
+host: 
+virsh net-edit default
+
+    <dhcp>
+      <range start='192.168.122.2' end='192.168.122.254'/>
+      <!-- 添加以下 <host> 条目 -->
+      <host mac='52:54:00:12:34:56' name='my-static-vm' ip='192.168.122.100'/>  
+      <!-- name: (可选) 为该主机设置一个 DNS 名称。libvirt 的内置 DNS 服务器会解析 my-static-vm.default 到 192.168.122.100。-->
+    </dhcp>
+
+然后：
+  virsh net-destroy default
+  virsh net-start default
+  virsh net-dumpxml > f1.xml
+
+需要查看ip租约
+你可以尝试重启 libvirtd 服务来强制刷新状态（这比重启网络更彻底）：
+重启后，再运行 virsh net-dhcp-leases default 看看。
+
+或者，手动删除租约文件（先停止 libvirtd）： 
+sudo systemctl stop libvirtd
+sudo rm /var/lib/libvirt/dnsmasq/default.leases # 路径可能略有不同
+sudo systemctl start libvirtd
+
+1.2.4 创建自定义 NAT 网络 (更高级)
+你可以创建一个全新的 NAT 网络，并在定义时就规划好 IP 分配。
+创建 XML 文件 mynat.xml： 
+<network>
+  <name>mynat</name>
+  <forward mode='nat'/>
+  <bridge name='virbr1' stp='on' delay='0'/>
+  <ip address='10.0.0.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='10.0.0.2' end='10.0.0.100'/>
+      <!-- 预留静态 IP -->
+      <host mac='52:54:00:12:34:56' ip='10.0.0.10'/>
+    </dhcp>
+  </ip>
+</network>
+
+定义并启动网络：
+
+virsh net-define mynat.xml
+virsh net-start mynat
+virsh net-autostart mynat
+
+创建 VM 时使用 --network network=mynat。
