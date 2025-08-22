@@ -1,5 +1,7 @@
 1、kvm 的网络有 nat 或 bridge
 
+python3 -m http.server 8001
+
 1.1 nat
 宿主机:
 /etc/netplan/00-xx.yaml
@@ -107,3 +109,155 @@ virsh net-start mynat
 virsh net-autostart mynat
 
 创建 VM 时使用 --network network=mynat。
+
+====================================================================================================
+1.2 nat 在 kvm中的端口转发 (通过端口转发让宿主机特定端口的流量转发到vm1上的私有IP上)
+1.2.1 得到vm的私有ip 
+
+1.2.2 端口转发
+   sudo iptables -t nat -A PREROUTING -p tcp -d 192.168.0.188 --dport 8001 -j DNAT --to-destination 192.168.122.101:8001
+
+   sudo iptables -A FORWARD -p tcp -d 192.168.122.101 --dport 8001 -j ACCEPT
+   sudo iptables -I FORWARD 1 -p tcp -d 192.168.122.101 --dport 8001 -j ACCEPT
+
+   sudo iptables -A FORWARD -p tcp -s 192.168.122.101 --sport 8001 -m state --state ESTABLISHED,RELATED -j ACCEPT
+   sudo iptables -I FORWARD 1 -p tcp -s 192.168.122.101 --sport 8001 -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+***** 转发 ssh服务
+sudo iptables -t nat -A PREROUTING -p tcp -d 192.168.0.188 --dport 20022 -j DNAT --to-destination 192.168.122.101:22
+sudo iptables -I FORWARD 1 -p tcp -d 192.168.122.101 --dport 22 -j ACCEPT
+sudo iptables -I FORWARD 1 -p tcp -s 192.168.122.101 --sport 22 -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+ 1.2.2.1. DNAT 规则：修改目标地址
+   sudo iptables -t nat -A PREROUTING -p tcp -d 192.168.0.188 --dport 8001 -j DNAT --to-destination 192.168.122.101:8001
+   
+   这条命令工作在 nat 表的 PREROUTING 链上，执行目标地址转换 (DNAT)。
+   -t nat: 指定操作的表 (table) 为 nat。nat 表专门用于网络地址转换。
+   -A PREROUTING: 将规则追加 (-A) 到 PREROUTING 链。PREROUTING 链在数据包刚进入网络接口、还未进行路由决策时就被处理。
+   -p tcp: 指定规则匹配的协议 (protocol) 为 TCP。HTTP 服务通常使用 TCP。
+   -d 192.168.0.188: 指定规则匹配的目标地址 (destination)。只有发往 192.168.0.188 这个 IP 地址的数据包才会被此规则处理。
+   --dport 80: 指定规则匹配的目标端口 (destination port) 为 80。这是 HTTP 服务的默认端口。
+   -j DNAT: 指定当数据包匹配此规则时，执行 DNAT (Destination Network Address Translation) 动作。DNAT 会修改数据包的目标 IP 地址和/或目标端口。
+   --to-destination 192.168.122.100:80: 这是 DNAT 动作的参数。它告诉 iptables：将这个数据包的目标地址从 192.168.0.188 改为 192.168.122.100，目标端口从 80 改为 80。
+ 1.2.2.2. FORWARD 规则：允许转发到 VM
+   sudo iptables -A FORWARD -p tcp -d 192.168.122.101 --dport 8001 -j ACCEPT
+   sudo iptables -I FORWARD 1 -p tcp -d 192.168.122.101 --dport 8001 -j ACCEPT
+
+   这条命令工作在 filter 表（默认表）的 FORWARD 链上，执行接受 (ACCEPT) 动作
+   -A FORWARD: 将规则追加到 FORWARD 链。FORWARD 链处理的是需要经过本机转发的数据包（即本机不是数据包的最终目的地，而是作为路由器/网关）。
+   -p tcp: 匹配 TCP 协议。
+   -d 192.168.122.100: 匹配目标地址为 192.168.122.100 的数据包。
+   --dport 80: 匹配目标端口为 80 的数据包。
+   -j ACCEPT: 当数据包匹配此规则时，接受 (ACCEPT) 它，允许它被转发。
+
+    DNAT 规则 (命令 1) 只负责修改数据包的目标地址。但它不决定这个修改后的数据包是否能被转发。
+    默认情况下，Linux 内核的 FORWARD 链（在 filter 表中）可能有一个默认策略是 DROP 或 REJECT，这意味着所有需要转发的数据包都会被丢弃。
+    因此，必须添加第二条 ACCEPT 规则，明确告诉内核：允许将目标是 192.168.122.100:80 的数据包转发出去。
+
+    没有第二条规则，即使 DNAT 成功修改了目标地址，数据包也会在 FORWARD 链被丢弃，无法到达 192.168.122.100。
+
+ 1.2.2.3. (可选但推荐) 允许返回流量 (ESTABLISHED/RELATED)
+    # 这通常由 libvirt 的规则处理，但加上更保险
+  sudo iptables -A FORWARD -p tcp -s 192.168.122.101 --sport 8001 -m state --state ESTABLISHED,RELATED -j ACCEPT
+  sudo iptables -I FORWARD 1 -p tcp -s 192.168.122.101 --sport 8001 -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+1.2.2.4  ip转发
+###确保ip 转发成功
+查看 ip转发
+cat /proc/sys/net/ipv4/ip_forward
+
+# 临时启用（重启后失效）
+sudo sysctl -w net.ipv4.ip_forward=1
+
+# 永久启用（推荐）
+echo 'net.ipv4.ip_forward = 1' | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p  # 重新加载配置
+
+         ------------------------------------------------------------------------------------
+1.2.2.5 验证
+  1、检查规则计数器：
+  # 查看 DNAT 规则是否命中
+  sudo iptables -t nat -L PREROUTING -n -v --line-numbers | grep 192.168.122.100
+  
+  如果发现有重复的规则，进行删除
+  sudo iptables -t nat -D PREROUTING 2
+  
+  # 查看 FORWARD 规则是否命中
+  sudo iptables -L FORWARD -n -v --line-numbers | grep 192.168.122.100
+  
+  从外部访问 http://192.168.0.188，观察 pkts 计数是否增加。
+  
+  2、在宿主机上抓包：
+  # 在物理接口抓包 (外部流量进入)
+  sudo tcpdump -i enp6s0 -n 'host 192.168.0.188 and port 80'
+  
+  # 在 virbr0 接口抓包 (内部流量转发)
+  sudo tcpdump -i virbr0 -n 'host 192.168.122.100 and port 80'
+  
+  3、在 VM 内部抓包：
+  # 在 ym-app 虚拟机内执行
+  sudo tcpdump -i any -n port 80
+
+
+    libvirt 自定义链 (LIBVIRT_FWI, LIBVIRT_FWO, LIBVIRT_FWX) 的作用：
+
+    libvirt 使用这些自定义链来管理 virbr0 网络的流量。
+    LIBVIRT_FWI (Forward In): 通常处理进入 virbr0 网络的流量（从外部到 VM）。
+    LIBVIRT_FWO (Forward Out): 通常处理离开 virbr0 网络的流量（从 VM 到外部）。
+    LIBVIRT_FWX (Forward External): 可能处理外部接口之间的转发（不太相关）。
+    关键点：libvirt 的这些链内部有它们自己的规则，可能默认拒绝了你未明确允许的端口转发。
+
+1.2.3 保存 iptables 的规则
+1.2.3.1 用系统软件
+sudo apt update
+sudo apt install iptables-persistent -y
+sudo netfilter-persistent save  # 保存当前内存中的规则
+sudo systemctl enable netfilter-persistent  # 开机自动加载规则
+
+登录后执行 sudo iptables -L -n -v 和 sudo iptables -t nat -L -n -v，检查你的规则是否还在。
+
+1.2.3.2 通用方法
+使用 iptables-save 和 iptables-restore (通用方法)
+# 保存所有表（filter, nat, mangle 等）的规则
+sudo iptables-save > /etc/iptables/rules.v4
+
+# 或者，只保存 nat 表
+# sudo iptables-save -t nat > /etc/iptables/nat-rules.v4
+
+# 创建目录 (如果不存在)
+sudo mkdir -p /etc/iptables
+
+你需要创建一个服务 (systemd service) 或使用网络服务的启动脚本来在开机时运行 iptables-restore。
+创建一个 systemd 服务 (推荐)：
+1、sudo nano /etc/systemd/system/iptables-restore.service
+2、
+[Unit]
+Description=Restore iptables rules
+After=network-pre.target
+Before=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/sbin/iptables-restore < /etc/iptables/rules.v4
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+
+3、
+sudo systemctl daemon-reload
+sudo systemctl enable iptables-restore.service
+
+
+
+
+
+
+
+
+
+
+   
+
+
+
