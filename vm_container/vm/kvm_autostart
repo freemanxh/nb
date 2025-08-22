@@ -1,0 +1,33 @@
+1、方法1 virsh autostart vm1
+
+
+2、方法2 通过 systemd 服务控制
+
+  # 1. 创建 systemd 服务文件
+  sudo nano /etc/systemd/system/vm1-autostart.service
+  
+  # 2. 写入以下内容（替换 YourVMName 为实际虚拟机名）
+  [Unit]
+  Description=Auto-start KVM VM: vm1
+  After=libvirtd.service
+  Requires=libvirtd.service
+  # 在 vm2 的 systemd 服务文件中添加：
+  After=vm1-autostart.service
+  
+  [Service]
+  Type=oneshot
+  # 在 virsh start 命令前添加等待，防止网络服务未就绪导致启动失败
+  ExecStartPre=/bin/sleep 30
+  ExecStart=/usr/bin/virsh start vm1
+  TimeoutSec=0
+  RemainAfterExit=yes
+  
+  [Install]
+  WantedBy=multi-user.target
+  
+  # 3. 启用服务（对每个虚拟机重复操作）
+  sudo systemctl enable vm1-autostart.service
+  sudo systemctl enable vm2-autostart.service
+  
+  # 4. 重启生效
+  sudo reboot
