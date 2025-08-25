@@ -1,0 +1,209 @@
+
+conf
+├── logstash
+│   └── spring_service.conf
+├── mysql
+│   └── custom.cnf
+└── redis
+    └── redis.conf
+
+data
+├── es
+│   └── data
+├── mysql
+│   └── data
+└── redis
+    └── data
+
+
+================================================================
+.env 
+
+
+#DATA_DIR=/home/yematech/docker/base/ym_db/data
+DATA_DIR=./data
+VOLUME_OPTS=bind,uid=1000,gid=1000
+
+MYSQL_VER=8.2
+REDIS_VER=7.0
+SEATA_VER=1.7.0
+ES_VER=8.4.3
+LOGSTASH_VER=8.4.3
+KIBANA_VER=8.4.3
+
+MYSQL_PORT=3306
+REDIS_PORT=6379
+SEATA_PORT=8091
+ES_PORT=9200
+LOGSTASH_PORT=5044
+KIBANA_PORT=5601
+
+MYSQL_PASSWORD=123456
+
+
+=====================================================================
+ym_db.yml
+
+# mkdir -p ./data && chown -R 1000:1000 ./data
+# mysql,redis 999
+# elasticsearch,logstash,kibana 1000
+
+
+# 日志
+#
+# depend on
+# top level volumes 不成功
+volumes:
+  # 数据库数据卷
+  mysql_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: "${DATA_DIR}/mysql/data"
+      o: "${VOLUME_OPTS}"
+  redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ./data/redis/data
+      o: "${VOLUME_OPTS}"
+  es_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ./data/es/data
+      o: "${VOLUME_OPTS}"
+
+
+x-logging: &default-logging
+  driver: "local"
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+networks:
+  db_net:
+    driver: bridge
+
+services:
+  mysql:
+    container_name: mysql
+    restart: unless-stopped
+    image: "mysql:${MYSQL_VER}"
+    environment:
+      - TZ=Asia/Shanghai
+      - "MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}"
+    ports:
+      - "${MYSQL_PORT}:3306"
+    cap_add:
+      - CAP_SYS_NICE
+    volumes:
+      - ./conf/mysql/custom.cnf:/etc/mysql/conf.d/custom.cnf
+      - ./data/mysql/data:/var/lib/mysql
+        #      - mysql_data:/var/lib/mysql
+    networks:
+      - db_net
+    logging:
+      driver: "local"
+      options:
+        max-size: "30m"
+        max-file: "3"
+
+  redis:
+    container_name: redis
+    restart: unless-stopped
+    image: "redis:${REDIS_VER}"
+    cap_add:
+      - CAP_SYS_NICE
+    environment:
+      - TZ=Asia/Shanghai
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - ./conf/redis/redis.conf:/usr/local/etc/redis/redis.conf
+      - ./data/redis/data:/data
+        #- redis_data:/data
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    networks:
+      - db_net
+    logging: *default-logging
+
+  seata-server:
+    container_name: seata
+    restart: unless-stopped
+    image: "seataio/seata-server:${SEATA_VER}"
+    ports:
+      - "${SEATA_PORT}:8091"
+    environment:
+      - TZ=Asia/Shanghai
+      - SEATA_PORT=8091
+      - STORE_MODE=file
+      - "JAVA_OPTS=-Dlogback.configurationFile=file:/seata-server/resources/logback-spring.xml" #针对seata 1.7.0 的版本
+    networks:
+      - db_net
+    logging: *default-logging
+
+  elasticsearch:
+    container_name: elasticsearch
+    restart: unless-stopped
+    image: "elasticsearch:${ES_VER}"
+    environment:
+      - TZ=Asia/Shanghai
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms2g -Xmx2g
+    mem_limit: 4G
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "${ES_PORT}:9200"
+    volumes:
+      - ./data/es/data:/usr/share/elasticsearch/data
+    networks:
+      - db_net
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://elasticsearch:9200"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+  logstash:
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    container_name: logstash
+    restart: unless-stopped
+    image: "logstash:${LOGSTASH_VER}"
+    environment:
+      - TZ=Asia/Shanghai
+      - "XPACK_MONITORING_ELASTICSEARCH_HOSTS=http://elasticsearch:${ES_PORT}"
+    ports:
+      - "${LOGSTASH_PORT}:5044"
+    volumes:
+      - ./conf/logstash/spring_service.conf:/usr/share/logstash/pipeline/spring_service.conf
+    networks:
+      - db_net
+    logging: *default-logging
+
+  kibana:
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    container_name: kibana
+    restart: unless-stopped
+    image: "kibana:${KIBANA_VER}"
+    environment:
+      - TZ=Asia/Shanghai
+      - ELASTICSEARCH_HOSTS=["http://elasticsearch:${ES_PORT}"]
+      - I18N_LOCALE=zh-CN
+    ports:
+      - "${KIBANA_PORT}:5601"
+    networks:
+      - db_net
+    logging: *default-logging
+
+
