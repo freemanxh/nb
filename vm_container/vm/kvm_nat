@@ -251,6 +251,54 @@ sudo systemctl daemon-reload
 sudo systemctl enable iptables-restore.service
 
 
+=========================================================================================
+解决kvm nat 环境下的 dns问题
+1、在宿主机中
+virsh net-edit default
+
+主要关注 <dns>...</dns> 及 <dnsmasq:options>...</dnsmasq:options>
+
+<network xmlns:dnsmasq='http://libvirt.org/schemas/network/dnsmasq/1.0'>
+  <name>default</name>
+  <uuid>9d906cbd-fe18-4231-affa-381361c445b3</uuid>
+  <forward mode='nat'/>
+  <bridge name='virbr0' stp='on' delay='0'/>
+  <mac address='52:54:00:31:46:be'/>
+  <dns>
+    <host ip='192.168.122.101'>
+      <hostname>ym-app-server</hostname>
+    </host>
+    <host ip='192.168.122.102'>
+      <hostname>ym-db-server</hostname>
+    </host>
+    <host ip='192.168.122.103'>
+      <hostname>ym-win-server</hostname>
+    </host>
+  </dns>
+  <ip address='192.168.122.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='192.168.122.2' end='192.168.122.254'/>
+      <host mac='52:54:00:b0:14:c6' name='ym-app-server' ip='192.168.122.101'/>
+      <host mac='52:54:00:57:31:92' name='ym-db-server' ip='192.168.122.102'/>
+      <host mac='52:54:00:68:fd:ab' name='ym-win-server' ip='192.168.122.103'/>
+    </dhcp>
+  </ip>
+  <dnsmasq:options>
+    <dnsmasq:option value='cache-size=1000'/>
+    <dnsmasq:option value='neg-ttl=300'/>
+    <dnsmasq:option value='no-resolv'/>
+  </dnsmasq:options>
+</network>
+
+2、在虚拟机中
+sudo vi /etc/resolv.conf
+# 添加以下内容（确保在文件顶部）
+nameserver 192.168.122.1  # NAT 网关即 DNS 服务器
+search localdomain        # 可选，用于短域名补全
+
+如果系统使用 systemd-resolved（如 Ubuntu 18.04+），需额外操作：
+sudo ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf  # 解除符号链接劫持
+
 
 
 
