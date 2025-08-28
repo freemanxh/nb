@@ -97,3 +97,9 @@ docker network connect mynet my_container
 
 # 容器断开网络
 docker network disconnect mynet my_container
+
+自定义网络 (User-Defined Networks)
+
+在同一个自定义网络中的容器，可以直接通过容器名称互相通信。
+Docker 内置了一个嵌入式 DNS 服务器。
+
