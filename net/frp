@@ -139,7 +139,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/home/yematech/frp/frp/frpc -c /home/yematech/frp/frp/frps.toml
+ExecStart=/home/yematech/frp/frp/frpc -c /home/yematech/frp/frp/frpc.toml
 Restart=always
 RestartSec=5
 
