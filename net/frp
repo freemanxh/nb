@@ -1,0 +1,114 @@
+下载地址： https://github.com/fatedier/frp/releases
+以下为0.64 版
+目前的token : $kR8d(.z#qV4Vf^kxm;d8gD=5>fr/9Eb
+都为toml的格式
+
+1、rpcs.toml
+
+bindPort = 7000  # 监听客户端连接的端口
+kcpBindPort = 7000  # KCP协议端口（可选，加速UDP传输）
+
+# 身份验证（安全核心！）
+auth.tokenSource.type = "file"  # 从文件读取token避免泄露
+auth.tokenSource.file.path = "/etc/frp/token"  # token文件路径（需chmod 600）
+
+# 管理面板（按需启用）
+webServer.addr = "0.0.0.0"
+webServer.port = 7500
+webServer.user = "admin"
+webServer.password = "your_strong_password"  # 务必修改！
+
+# 端口安全控制（防止滥用）
+allowPorts = [
+  { start = 8000, end = 8010 },  # 允许映射的端口范围
+]
+
+# 日志设置
+log.to = "/var/log/frps.log"
+log.level = "warn"  # 生产环境建议warn或error
+log.maxDays = 7
+
+-------------------------------------------------------------
+
+bindPort = 37370  # 监听客户端连接的端口
+kcpBindPort = 37370  # KCP协议端口（可选，加速UDP传输）
+
+# 身份验证（安全核心！）
+auth.tokenSource.type = "file"  # 从文件读取token避免泄露
+auth.tokenSource.file.path = "./token"  # token文件路径（需chmod 600）
+
+ # 管理面板（按需启用）
+#webServer.addr = "0.0.0.0"
+#webServer.port = 7500
+# webServer.user = "admin"
+# webServer.password = "your_strong_password"  # 务必修改！
+#
+ # 端口安全控制（防止滥用）
+# allowPorts = [
+#   { start = 8000, end = 8010 },  # 允许映射的端口范围
+#   ]
+#
+# 日志设置
+log.to = "./frps.log"
+log.level = "info"  # 生产环境建议warn或error
+log.maxDays = 7
+
+=============================================================================
+
+2、frpc.toml
+serverAddr = "your.server.public.ip"  # 公网服务器IP
+serverPort = 7000  # 需与服务端bindPort一致
+
+# 身份验证（与服务器token文件内容相同）
+auth.tokenSource.type = "file"
+auth.tokenSource.file.path = "C:/frp/token"  # Windows路径示例
+
+# 场景1：暴露SSH服务（TCP直连）
+[[proxies]]
+name = "ssh"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 22
+remotePort = 6000  # 公网通过 your.server.public.ip:6000 访问
+
+# 场景2：暴露Web服务（HTTP域名代理）
+[[proxies]]
+name = "web"
+type = "http"
+localPort = 8080
+customDomains = ["app.yourdomain.com"]  # 域名需解析到公网IP
+
+------------------------------------------------------------------
+serverAddr = "47.108.185.36"  # 公网服务器IP
+serverPort = 37370  # 需与服务端bindPort一致
+
+# 身份验证（与服务器token文件内容相同）
+auth.tokenSource.type = "file"
+auth.tokenSource.file.path = "./token"  
+
+# 场景1：暴露SSH服务（TCP直连）
+[[proxies]]
+name = "ssh"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 22
+remotePort = 6000  # 公网通过 your.server.public.ip:6000 访问
+
+# 场景2：暴露Web服务（HTTP域名代理）
+[[proxies]]
+name = "web"
+type = "http"
+localPort = 5012 
+customDomains = ["app.yourdomain.com"]
+
+
+3、启动
+s: nohup ./frps -c frps.toml &
+c: nohup ./frpc -c frpc.toml &
+
+4、使用
+ssh -p 6000 username@your.server.public.ip
+
+
+
+
