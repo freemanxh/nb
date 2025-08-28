@@ -1,0 +1,24 @@
+1、Docker 启动时，会创建一个名为 docker0 的虚拟网桥（通常 IP 为 172.17.0.1）。
+# 列出所有网络
+docker network ls
+
+# 查看网络详情
+docker network inspect <network_name>
+
+# 创建网络
+docker network create -d bridge mynet
+docker network create -d overlay my_overlay
+
+# 删除网络
+docker network rm mynet
+
+# 容器连接到网络
+docker network connect mynet my_container
+
+# 容器断开网络
+docker network disconnect mynet my_container
+
+自定义网络 (User-Defined Networks)
+
+在同一个自定义网络中的容器，可以直接通过容器名称互相通信。
+Docker 内置了一个嵌入式 DNS 服务器。
