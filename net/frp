@@ -34,11 +34,11 @@ transport.tls.force = true  # 服务端仅接受 TLS 加密连接
 -------------------------------------------------------------
 
 bindPort = 37370  # 监听客户端连接的端口
-kcpBindPort = 37370  # KCP协议端口（可选，加速UDP传输）
+#kcpBindPort = 37370  # KCP协议端口（可选，加速UDP传输）
 
 # 身份验证（安全核心！）
 auth.tokenSource.type = "file"  # 从文件读取token避免泄露
-auth.tokenSource.file.path = "./token"  # token文件路径（需chmod 600）
+auth.tokenSource.file.path = "/root/frp/frp/token"  # token文件路径（需chmod 600）
 
  # 管理面板（按需启用）
 #webServer.addr = "0.0.0.0"
@@ -47,14 +47,18 @@ auth.tokenSource.file.path = "./token"  # token文件路径（需chmod 600）
 # webServer.password = "your_strong_password"  # 务必修改！
 #
  # 端口安全控制（防止滥用）
-# allowPorts = [
-#   { start = 8000, end = 8010 },  # 允许映射的端口范围
-#   ]
+allowPorts = [
+   { start = 6000, end = 6700 },  # 允许映射的端口范围
+   { single = 37370 }  # 允许映射的端口范围
+]
+transport.maxPoolCount = 50 
 #
 # 日志设置
-log.to = "./frps.log"
+log.to = "/root/frp/frp/frps.log"
 log.level = "info"  # 生产环境建议warn或error
 log.maxDays = 7
+
+transport.tls.force = true  # 服务端仅接受 TLS 加密连接
 
 =============================================================================
 
@@ -89,7 +93,9 @@ serverPort = 37370  # 需与服务端bindPort一致
 
 # 身份验证（与服务器token文件内容相同）
 auth.tokenSource.type = "file"
-auth.tokenSource.file.path = "./token"  
+auth.tokenSource.file.path = "/home/yematech/frp/frp/token"  
+
+user = "frpc_bjy"
 
 # 场景1：暴露SSH服务（TCP直连）
 [[proxies]]
@@ -97,14 +103,16 @@ name = "ssh"
 type = "tcp"
 localIP = "127.0.0.1"
 localPort = 22
-remotePort = 6000  # 公网通过 your.server.public.ip:6000 访问
+remotePort = 6100  # 公网通过 your.server.public.ip:6000 访问
 
 # 场景2：暴露Web服务（HTTP域名代理）
-[[proxies]]
-name = "web"
-type = "http"
-localPort = 5012 
-customDomains = ["app.yourdomain.com"]
+#[[proxies]]
+#name = "web"
+#type = "http"
+#localPort = 5012 
+#customDomains = ["app.yourdomain.com"]
+
+#transport.tls.enable = true  # 客户端主动启用 TLS 加密
 
 
 3、启动
