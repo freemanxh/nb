@@ -1,0 +1,223 @@
+.env
+OPERATION=bjy
+
+PRICING_TENANT_VER=1502
+PRICING_USER_VER=1500
+PRICING_AUTHORITY_PLATFORM_VER=1506
+PRICING_AUTHORITY_SERVER_VER=1504
+PRICING_AUTHORITY_APPLICATION_VER=1505
+PRICING_VALUATION_VER=1722
+PRICING_PARAM_VER=1723
+PRICING_CRF_VER=356
+KNOWLEDGE_BASE_SUPPORT_VER=1508
+KNOWLEDGE_BASE_ANALYSIS_VER=1294
+KNOWLEDGE_BASE_BRAIN_VER=1509
+KNOWLEDGE_BASE_GATEWAY_VER=1510
+BASE_SMART_VER=49
+CLOUD_DATABASE_VER=954
+
+CLOUD_DATABASE_PORT1=5011
+CLOUD_DATABASE_PORT2=5012
+
+----------------------------------------------------
+tree data
+data
+└── share_files
+
+
+--------------------------------------------------------------
+
+networks:
+  net_frontend:
+    driver: bridge
+  net_backend:
+    driver: bridge
+
+x-logging: &default-logging
+  driver: "local"
+  options:
+    max-size: "5m"
+    max-file: "3"
+x-environment: &default-environment
+  TZ: Asia/Shanghai
+  LANG: C.UTF-8
+  JAVA_OPTS: -Xms512m -Xmx1g -XX:+UseG1GC
+x-volumes: &default-volumens
+  #- /etc/timezone:/etc/timezone:ro
+  #- /etc/localtime:/etc/localtime:ro
+
+services:
+  pricing-tenant:
+    container_name: pricing-tenant
+    user: "1000:1000"
+    restart: unless-stopped
+    image: "harbor.yematech.cc:80/ym_repo/pricing-tenant-${OPERATION}:${PRICING_TENANT_VER}"
+    networks:
+      - net_backend
+    environment: *default-environment
+    logging: *default-logging
+    
+  pricing-user:
+    container_name: pricing-user
+    user: "1000:1000"
+    restart: unless-stopped
+    image: "harbor.yematech.cc:80/ym_repo/pricing-user-${OPERATION}:${PRICING_USER_VER}"
+    networks:
+      - net_backend
+    environment: *default-environment
+    logging: *default-logging
+
+  pricing-authority-platform:
+    container_name: pricing-authority-platform
+    user: "1000:1000"
+    restart: unless-stopped
+    image: "harbor.yematech.cc:80/ym_repo/pricing-authority-platform-${OPERATION}:${PRICING_AUTHORITY_PLATFORM_VER}"
+    networks:
+      - net_backend
+    environment: *default-environment
+    logging: *default-logging
+
+  pricing-authority-server:
+    container_name: pricing-authority-server
+    user: "1000:1000"
+    restart: unless-stopped
+    image: "harbor.yematech.cc:80/ym_repo/pricing-authority-server-${OPERATION}:${PRICING_AUTHORITY_SERVER_VER}"
+    networks:
+      - net_backend
+    environment: *default-environment
+    logging: *default-logging
+
+  pricing-authority-application:
+    container_name: pricing-authority-application
+    user: "1000:1000"
+    restart: unless-stopped
+    image: "harbor.yematech.cc:80/ym_repo/pricing-authority-application-${OPERATION}:${PRICING_AUTHORITY_APPLICATION_VER}"
+    networks:
+      - net_backend
+    environment: *default-environment
+    logging: *default-logging
+
+  pricing-valuation:
+    container_name: pricing-valuation
+    user: "1000:1000"
+    restart: unless-stopped
+    image: "harbor.yematech.cc:80/ym_repo/pricing-valuation-${OPERATION}:${PRICING_VALUATION_VER}"
+    networks:
+      - net_backend
+    environment: *default-environment
+    logging: *default-logging
+
+  pricing-param:
+    container_name: pricing-param
+    user: "1000:1000"
+    restart: unless-stopped
+    image: "harbor.yematech.cc:80/ym_repo/pricing-param-${OPERATION}:${PRICING_PARAM_VER}"
+    networks:
+      - net_backend
+    environment: *default-environment
+    logging: *default-logging
+    
+  pricing-crf:
+    container_name: pricing-crf
+    user: "1000:1000"
+    restart: unless-stopped
+    image: "harbor.yematech.cc:80/ym_repo/pricing-crf-${OPERATION}:${PRICING_CRF_VER}"
+    networks:
+      - net_backend
+    environment:
+      # 这个只有excel中用，其它的冗余
+      SYNONYMS_WORD2VEC_BIN_MODEL_ZH_CN: /app/code/words.vector.gz
+      TZ: Asia/Shanghai
+      LANG: C.UTF-8
+      UVICORN_APP: app.api:app
+    logging: *default-logging
+
+  knowledge-base-support:
+    container_name: knowledge-base-support
+    user: "1000:1000"
+    depends_on:
+      - knowledge-base-brain
+    restart: unless-stopped
+    image: "harbor.yematech.cc:80/ym_repo/knowledge-base-support-${OPERATION}:${KNOWLEDGE_BASE_SUPPORT_VER}"
+    networks:
+      - net_backend
+    volumes:
+      - ./data/share_files:/data/files
+    environment: *default-environment
+    logging: *default-logging
+    
+  knowledge-base-analysis:
+    container_name: knowledge-base-analysis
+    user: "1000:1000"
+    depends_on:
+      - knowledge-base-support
+    restart: unless-stopped
+    image: "harbor.yematech.cc:80/ym_repo/knowledge-base-analysis-${OPERATION}:${KNOWLEDGE_BASE_ANALYSIS_VER}"
+    networks:
+      - net_backend
+    environment:
+      <<: *default-environment
+      JAVA_OPTS: -Xms2g -Xmx4g -XX:+UseG1GC
+    logging: *default-logging
+
+  knowledge-base-brain:
+    container_name: knowledge-base-brain
+    user: "1000:1000"
+    restart: unless-stopped
+    image: "harbor.yematech.cc:80/ym_repo/knowledge-base-brain-${OPERATION}:${KNOWLEDGE_BASE_BRAIN_VER}"
+    networks:
+      - net_backend
+    environment: *default-environment
+    logging: *default-logging
+
+  knowledge-base-gateway:
+    container_name: knowledge-base-gateway
+    user: "1000:1000"
+    restart: unless-stopped
+    image: "harbor.yematech.cc:80/ym_repo/knowledge-base-gateway-${OPERATION}:${KNOWLEDGE_BASE_GATEWAY_VER}"
+    networks:
+      - net_backend
+    environment: *default-environment
+    logging: *default-logging
+    
+  base-smart:
+    container_name: base-smart
+    user: "1000:1000"
+    restart: unless-stopped
+    image: "harbor.yematech.cc:80/ym_repo/base-smart-${OPERATION}:${BASE_SMART_VER}"
+    networks:
+      - net_backend
+    environment:
+      TZ: Asia/Shanghai
+      LANG: C.UTF-8
+      UVICORN_APP: app.api:app
+    logging: *default-logging
+
+  cloud-database:
+    container_name: cloud-database
+      #user: "1000:1000"
+    depends_on:
+      - knowledge-base-analysis
+    restart: unless-stopped
+    image: "harbor.yematech.cc:80/ym_repo/cloud-database-${OPERATION}:${CLOUD_DATABASE_VER}"
+    networks:
+      - net_backend
+      - net_frontend
+    environment: *default-environment
+    ports:
+      - "${CLOUD_DATABASE_PORT1}:5011"
+      - "${CLOUD_DATABASE_PORT2}:5012"
+    logging: *default-logging
+
+
+
+
+
+
+
+
+
+
+
+
+
