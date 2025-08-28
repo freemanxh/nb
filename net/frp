@@ -28,6 +28,8 @@ log.to = "/var/log/frps.log"
 log.level = "warn"  # 生产环境建议warn或error
 log.maxDays = 7
 
+transport.tls.force = true  # 服务端仅接受 TLS 加密连接
+
 -------------------------------------------------------------
 
 bindPort = 37370  # 监听客户端连接的端口
@@ -78,6 +80,8 @@ type = "http"
 localPort = 8080
 customDomains = ["app.yourdomain.com"]  # 域名需解析到公网IP
 
+#transport.tls.enable = true  # 客户端主动启用 TLS 加密
+
 ------------------------------------------------------------------
 serverAddr = "47.108.185.36"  # 公网服务器IP
 serverPort = 37370  # 需与服务端bindPort一致
@@ -109,6 +113,53 @@ c: nohup ./frpc -c frpc.toml &
 4、使用
 ssh -p 6000 username@your.server.public.ip
 
+5、服务启动
+frps:
+/etc/systemd/system/frps.service 
+
+[Unit]
+Description=frps daemon
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/root/frp/frp/frps -c /root/frp/frp/frps.toml
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+
+frpc:
+
+/etc/systemd/system/frpc.service 
+[Unit]
+Description=frpc daemon
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/home/yematech/frp/frp/frpc -c /home/yematech/frp/frp/frps.toml
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+
+------------------------------------------------------------------------
+
+
+sudo systemctl daemon-reload
+sudo systemctl enable frps
+sudo systemctl start frps
+
+
+6、检查日志
+# 查看 frps 服务的详细日志
+sudo journalctl -u frps.service -f
+
+# 或者查看最近的失败记录
+sudo journalctl -u frps.service --since "5 minutes ago"
 
 
 
