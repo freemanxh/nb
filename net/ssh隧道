@@ -1,1 +1,36 @@
 ssh -CNg -L 11434:127.0.0.1:11434 root@connect.westc.gpuhub.com
+
+
+1、本地端口转发 (Local Port Forwarding) - -L
+ssh -L [bind_address:]Lport:target_host:target_port user@ssh_server
+#本地的3307访问，转到本地的3306服务。通过127.0.0.1:3307访问localhost:3306
+ssh -L 3307:localhost:3306 user@vps_ip
+通过本地的127.0.0.1
+ssh -CNg -L 11434:127.0.0.1:11434 root@connect.westc.gpuhub.com
+-L [本地机器端口]:[远程机器上的目标地址]:[远程机器上的目标端口]
+
+
+
+2、远程端口转发 (Remote Port Forwarding) - -R (反向 SSH 隧道)
+ssh -R [bind_address:]Rport:target_host:target_port user@ssh_server
+
+# 在家庭服务器 Server A 上执行
+ssh -f -N -R 6000:localhost:22 user@vps_ip
+
+3. 动态端口转发 (Dynamic Port Forwarding) - -D
+
+-f: 让 SSH 在后台运行 (fork into background)。
+-N: 不执行远程命令，仅用于端口转发。与 -f 配合使用非常常见。
+-g: 允许远程主机连接到本地转发的端口（与 -L 配合，让 bind_address 默认行为类似 0.0.0.0）。注意安全风险。
+
+autossh -M 6100 -f -N -L 8080:localhost:80 user@vps_ip
+
+
+
+    想从本地安全访问远程网络中的服务？ ➔ 本地端口转发 (-L)。
+    想让外部能访问本地（内网）的服务？ ➔ 远程端口转发 (-R) (反向隧道)。
+    想让多个应用通过一个加密通道代理上网？ ➔ 动态端口转发 (-D) (SOCKS 代理)。
+
+
+
+
