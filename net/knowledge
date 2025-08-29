@@ -1,0 +1,9 @@
+1、ping
+ping 利用 ICMP (Internet Control Message Protocol) 协议，向目标主机发送一个特殊的 ICMP 报文（称为 Echo Request，回声请求）。
+
+ttl=117: 生存时间 (Time To Live)。这是一个关键字段！ 每当数据包经过一个路由器（或三层设备），TTL 值就会减 1。
+  linux:64  windows:128  unix:256
+往返时间 (Round-Trip Time, RTT)
+
+sudo ping -f -c 10000 192.168.0.60
+ping -q -c 10 192.168.0.60
