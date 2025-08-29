@@ -32,5 +32,30 @@ autossh -M 6100 -f -N -L 8080:localhost:80 user@vps_ip
     想让多个应用通过一个加密通道代理上网？ ➔ 动态端口转发 (-D) (SOCKS 代理)。
 
 
+保持隧道稳定 (自动重连):
+    SSH 连接可能因网络问题断开。可以使用 autossh 工具来自动监控和重启隧道。
+    安装 autossh:
+    Ubuntu/Debian: sudo apt install autossh
+
+    autossh -M 6100 -f -N -R 6000:localhost:22 user@47.108.185.36
+
+/etc/systemd/system/reverse-ssh-tunnel.service
+[Unit]
+Description=Reverse SSH Tunnel to VPS
+After=network.target
+
+[Service]
+User=your_user_on_serverA
+ExecStart=/usr/bin/autossh -M 6100 -N -R 6000:localhost:22 user@47.108.185.36
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target
+
+sudo systemctl daemon-reload
+sudo systemctl enable reverse-ssh-tunnel.service
+sudo systemctl start reverse-ssh-tunnel.service
+
 
 
