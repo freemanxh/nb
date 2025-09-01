@@ -218,6 +218,10 @@ services:
 ###############################################################################################################
 #设置gitlab自动定时备份
 
+务必要在docker容器中设置cron并保证运行
+务必要在服务器上把器及机器上的备份给备份到nfs(22上为虚拟机的hdd)
+务必要保证其它机器上的备份
+
 本地默认备份路径：/var/opt/gitlab/backups 
 gitlab备份命令：gitlab-rake gitlab:backup:create        |     sudo gitlab-backup create   |    docker exec -t <container name> gitlab-backup create
 gitlab恢复命令：gitlab-rake gitlab:backup:restore BACKUP=备份包名
@@ -238,8 +242,8 @@ step 3.
 crontab -e
 0 2 * * * /opt/gitlab/bin/gitlab-rake gitlab:backup:create STRATEGY=copy #每天2点备份,STRATEGY=copy不替换之前的文件  如果没有crontab 就 apt update;apt install cron
 
-设置cron服务开机使能：systemctl enable crond.service 或 service crond enable
-修改后重启cron服务：systemctl restart crond 或 service crond restart
+设置cron服务开机使能：systemctl enable crond.service 或 service cron enable
+修改后重启cron服务：systemctl restart crond 或 service cron restart
 
 
 
