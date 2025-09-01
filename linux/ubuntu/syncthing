@@ -41,6 +41,7 @@ sudo ufw status
 
 ==================================================
 sudo systemctl daemon-reload
+sudo systemctl enable syncthing.service
 sudo systemctl start syncthing.service
 
 ls -ah ~/Sync
