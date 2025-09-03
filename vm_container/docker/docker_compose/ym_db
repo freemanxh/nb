@@ -220,6 +220,41 @@ services:
 
 
 =================================================================================================================
+
+网络：
+networks:
+  app-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+          gateway: 172.20.0.1
+          ip_range: 172.20.0.0/24
+#---------------------------------------
+    attachable: true  # 允许外部容器连接，是否可附加
+    internal: false   # 允许访问外网
+
+dns是配置在service中的。和networks同级。
+    dns:
+      - 8.8.8.8
+      - 114.114.114.114
+#---------------------------------
+    dns_search:
+      - example.com
+      - internal.example.com
+    dns_opt:
+      - ndots:2
+      - timeout:2
+
+service中的配置：
+    networks:
+      public:
+        ipv4_address: 172.20.0.20
+      private:
+        ipv4_address: 172.21.0.10
+
+
+
 1、mysql healthcheck:
 基于此命令： mysqladmin ping -h localhost -u root -p${MYSQL_ROOT_PASSWORD}
 5.7:
