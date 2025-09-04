@@ -7,3 +7,15 @@ ttl=117: 生存时间 (Time To Live)。这是一个关键字段！ 每当数据�
 
 sudo ping -f -c 10000 192.168.0.60
 ping -q -c 10 192.168.0.60
+
+
+2、dns
+host
+dig
+nslookup
+
+dig @dnsserver name querytype
+dig @8.8.8.8 www.baidu.com A
+
+dig +short name
+dig +trace name
