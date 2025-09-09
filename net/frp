@@ -7,6 +7,11 @@ ftpuser
 XdddmgjqqdK@mtW_2025_ftp
 
 
+company:
+ftpuser:XdddmgjqqdK@mtW_2025_ftp
+xuhui:XdddmgjqqdK@mtW_2025
+
+
 
 ssh -p6100 yematech@47.108.185.36
 
