@@ -8,6 +8,7 @@ ssh -p6100 yematech@47.108.185.36
 下载地址： https://github.com/fatedier/frp/releases
 以下为0.64 版
 47.108.185.36
+37370
 目前的token : $kR8d(.z#qV4Vf^kxm;d8gD=5>fr/9Eb
 都为toml的格式
 
