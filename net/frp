@@ -2,6 +2,15 @@
 6500 ym  Rgzdbsa_2024!ZxY_96_96
 6600 xh  FzydyzdY@mtW_2025_DooR
 
+47.108.185.36:6699
+
+admin
+FzydyzdY@mtW_2025_MusiC
+
+xuhui
+xuhui_MusiC_@2025
+
+
 
 07 and 09
 xuhui:FzydyzdY@mtW_2025
@@ -135,6 +144,19 @@ remotePort = 6100  # 公网通过 your.server.public.ip:6000 访问
 #customDomains = ["app.yourdomain.com"]
 
 #transport.tls.enable = true  # 客户端主动启用 TLS 加密
+
+web 方式由于没有80和443端口
+故还是用tcp,vps上要放开6699端口
+
+[[proxies]]
+name = "09_musics"
+type = "tcp"
+localIP= "127.0.0.1"
+localPort = 4533
+remotePort = 6699
+#customDomains = ["nas.smallman.com.cn"]
+
+=================================================================
 
 
 3、启动
