@@ -1,0 +1,40 @@
+1、music_server
+  
+docker run -d \
+  --name=navidrome \
+  --volume /nfs/nas_hdd1/musics:/music \
+  -p 4533:4533 \
+  --restart=unless-stopped \
+  deluan/navidrome
+
+-----------------------------------------------------------------
+  
+  
+networks:
+  net_music:
+    driver: bridge
+
+x-logging: &default-logging
+  driver: "local"
+  options:
+    max-size: "5m"
+    max-file: "3"
+x-environment: &default-environment
+  TZ: Asia/Shanghai
+  LANG: C.UTF-8
+
+
+services:
+  musics-server:
+    container_name: musics_navidrome
+    user: "1000:1000"
+    restart: unless-stopped
+    image: "deluan/navidrome"
+    networks:
+      - net_music
+    ports:
+      - "4533:4533"
+    volumes:
+      - /nfs/nas_hdd1/musics:/music
+    environment: *default-environment
+    logging: *default-logging
