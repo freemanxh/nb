@@ -1,0 +1,61 @@
+1、ss
+ss
+如果系统中没有，需要安装 iproute程序
+
+#查看当前服务器的网络连接统计
+ss -s
+#查看所有打开的网络端口,监听状态的 socket（LISTEN）
+ss -l
+#显示进程信息
+ss -p
+#查看所有的socket连接
+ss -a
+ss -ta
+ss -ua
+
+#查看所有 TCP/UDP 监听端口（数字格式）
+ss -tuln  
+ss -tln
+ss -tan
+
+ss -tulnp
+
+#查看特定端口
+ss -tn dst :80
+ss -tn src :80
+ss -tn sport = :80
+ss -tn dport = :80
+
+#查看特定IP的连接
+ss -tn dst 192.168.0.100
+ss -tn src 192.168.0.100
+
+#查看tcp连接的详细信息
+ss -ti
+
+#过滤语法：
+# 查看状态为 ESTABLISHED 的连接
+ss -t state established
+
+# 查看状态为 TIME-WAIT 的连接
+ss -t state time-wait
+
+# 查看源端口 > 1024 的连接
+ss -t sport \> :1024
+
+# 查看目标端口是 80 或 443
+ss -t dport = :80 or dport = :443
+
+# 查看本地地址是 127.0.0.1 的连接
+ss -t src 127.0.0.1
+
+# 查看非本地回环的连接
+ss -t not src 127.0.0.1
+
+----------------------------------------------------
+统计各状态 TCP 连接数
+ss -t state all | awk 'NR>1 {state[$1]++} END {for(s in state) print s, state[s]}'
+查看 TIME-WAIT 连接最多的 IP
+ss -tn state time-wait | awk '{print $5}' | cut -d: -f1 | sort | uniq -c | sort -nr | head
+# 检测异常连接（高并发场景）
+ss -nt sport \> :1024 | awk '{print $5}' | sort | uniq -c | sort -n
