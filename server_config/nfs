@@ -1,0 +1,54 @@
+ubuntu server:
+sudo apt install nfs-kernel-server
+
+/etc/exports
+
+sudo chown nobody:nogroup /var/nfs/general  # 或指定用户
+sudo chmod 755 /var/nfs/general
+
+/var/nfs/general    client_ip(rw,sync,no_subtree_check) 
+
+/var/nfs/general \
+  192.168.0.100(rw,sync,no_subtree_check) \
+  192.168.0.101(ro,sync,no_subtree_check)
+
+#sync 同步写入，数据更安全（推荐）
+#no_subtree_check 提高性能，禁用子目录检查（推荐）
+
+# 重新加载 exports 配置
+sudo exportfs -ra
+# 在服务端验证
+sudo exportfs -v
+
+sudo systemctl restart nfs-kernel-server
+
+所有用户统一权限：all_squash,anonuid=1000,anongid=1000
+
+
+====================================================
+
+ubuntu client:
+sudo apt install nfs-common
+#必须要先添加目录
+sudo mkdir -p /nfs/general
+sudo mount host_ip:/var/nfs/general /nfs/general
+
+修改fstab后
+sudo mount -a
+卸载
+sudo umount /nfs/general 
+
+如果提示 “device is busy”，可用 sudo umount -l /nfs/general（lazy unmount）
+
+showmount -e 192.168.0.22
+
+host_ip:/var/nfs/general    /nfs/general   nfs auto,nofail,noatime,_netdev,actimeo=1800 0 0
+
+# 共享给多个 IP，读写，映射为指定用户
+/data/shared \
+  192.168.0.100(rw,sync,no_subtree_check,all_squash,anonuid=1000,anongid=1000) \
+  192.168.0.101(rw,sync,no_subtree_check,all_squash,anonuid=1000,anongid=1000) \
+  192.168.1.50(rw,sync,no_subtree_check,all_squash,anonuid=1000,anongid=1000)
+
+# 只读共享给一个网段
+/data/public 192.168.0.0/24(ro,sync,no_subtree_check)
