@@ -1,0 +1,57 @@
+server:
+1、wireguard-install
+curl -O https://raw.githubusercontent.com/angristan/wireguard-install/master/wireguard-install.sh
+chmod +x wireguard-install.sh
+sudo ./wireguard-install.sh
+
+2、交互式安装：
+Welcome to the WireGuard installer!
+I need to ask you a few questions before starting the setup.
+You can leave the default options and just press enter if you are ok with them.
+
+IPv4 or IPv6 public address: [your-server-public-ip] ← 自动检测，回车
+Public interface: eth0 ← 通常是 eth0 或 ens3，回车
+WireGuard interface name: wg0 ← 默认，回车
+Server's WireGuard IPv4: 10.8.0.1 ← 默认虚拟网关，回车
+Server's WireGuard IPv6: 建议跳过（除非你需要 IPv6）
+Server's WireGuard port [51820]: ← 默认端口，回车
+First DNS resolver: 8.8.8.8 ← 推荐 Google DNS
+Second DNS resolver (optional): 1.1.1.1 ← Cloudflare DNS
+Client name: mylaptop ← 给你的设备起个名字（如 mypc, iphone, nas）
+
+
+3、生成客户端
+mylaptop.conf
+
+4、添加更多客户端
+sudo ./wireguard-install.sh
+1) Add a new client
+输入新设备名（如 myphone）
+
+
+========================================================================
+
+client:
+1、Windows 客户端
+    下载安装：https://www.wireguard.com/install/
+    打开 WireGuard → 点击 Import tunnel(s) from file
+    选择 mylaptop.conf
+    点击 Activate → 连接成功！
+    
+2、Android / iOS
+    应用商店搜索 “WireGuard” 并安装
+    点击 ➕ → Create from file or archive
+    用微信/QQ/邮件/AirDrop 传 myphone.conf 到手机
+    导入 → 启用
+
+3、linux
+sudo apt update && sudo apt install wireguard resolvconf -y  # Ubuntu/Debian
+# 或
+sudo yum install epel-release wireguard-tools -y            # CentOS 8+
+sudo dnf install wireguard-tools -y                         # CentOS 9+/Fedora
+
+sudo cp mylaptop.conf /etc/wireguard/wg0.conf
+sudo systemctl enable wg-quick@wg0
+sudo systemctl start wg-quick@wg0
+
+sudo wg show
