@@ -131,6 +131,7 @@ customDomains = ["app.yourdomain.com"]  # 域名需解析到公网IP
 #transport.tls.enable = true  # 客户端主动启用 TLS 加密
 
 ------------------------------------------------------------------
+所有的远程端口，需要在vps上安全开放出去
 serverAddr = "47.108.185.36"  # 公网服务器IP
 serverPort = 37370  # 需与服务端bindPort一致
 
@@ -167,6 +168,11 @@ localIP= "127.0.0.1"
 localPort = 4533
 remotePort = 6699
 #customDomains = ["nas.smallman.com.cn"]
+
+# 日志设置
+log.to = "/root/frp/frp/frps.log"
+log.level = "info"  # 生产环境建议warn或error
+log.maxDays = 7
 
 =================================================================
 
