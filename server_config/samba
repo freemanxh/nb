@@ -1,0 +1,44 @@
+#应先创建组xsb
+sudo groupadd xsb
+sudo useradd -r -g xsb -M -s /sbin/nologin xsb01
+#-M 不创建家目录是合理的（Samba 用户通常不需要）
+
+sudo chown -R xsb01:xsb /data/smb_test
+sudo chmod -R 0775 /data/smb_test
+
+----------------------------------------------------
+
+sudo apt install samba
+#/etc/samba/smb.conf
+
+
+[global]
+   workgroup = WORKGROUP
+   server string = Samba Server %v
+   security = user
+   map to guest = bad user
+   follow symlinks = yes
+   wide links = yes
+   unix extensions = no
+
+[share]
+   comment = Share Folder
+   path = /data/smb_test
+   browseable = yes
+   writable = no
+   #允许匿名访问
+   guest ok = yes
+   create mask = 0664
+   directory mask = 0775
+   force user = xsb01
+   force group = xsb
+   valid users = xsb01, @xsb,xuhui
+
+
+-----------------------------------------------------------
+sudo systemctl restart smbd nmbd
+sudo systemctl enable smbd nmbd
+
+
+ 测试配置文件语法
+testparm
