@@ -20,6 +20,9 @@ sudo apt install samba
    follow symlinks = yes
    wide links = yes
    unix extensions = no
+   log file = /var/log/samba/log.%m
+   max log size = 1000
+   logging = file
 
 [share]
    comment = Share Folder
