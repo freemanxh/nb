@@ -1,10 +1,13 @@
 #应先创建组xsb
 sudo groupadd xsb
-sudo useradd -r -g xsb -M -s /sbin/nologin xsb01
+sudo useradd -g xsb -M -s /sbin/nologin xsb01
 #-M 不创建家目录是合理的（Samba 用户通常不需要）
 
 sudo chown -R xsb01:xsb /data/smb_test
 sudo chmod -R 0775 /data/smb_test
+
+# 优化建议 → 关闭 other 写权限 + 继承机制（需要测试）
+sudo chmod -R 3770 /data/smb_test  # 3770 = rwxrws--- (2770 目录可写)
 
 ----------------------------------------------------
 
@@ -16,7 +19,8 @@ sudo apt install samba
    workgroup = WORKGROUP
    server string = Samba Server %v
    security = user
-   map to guest = bad user
+   #map to guest = bad user
+   map to guest = Never
    follow symlinks = yes
    wide links = yes
    unix extensions = no
@@ -31,11 +35,34 @@ sudo apt install samba
    writable = no
    #允许匿名访问
    guest ok = yes
-   create mask = 0664
-   directory mask = 0775
+   create mask = 0660
+   directory mask = 3770
    force user = xsb01
    force group = xsb
-   valid users = xsb01, @xsb,xuhui
+   valid users = xsb01,@xsb,smbguest
+   inherit permissions = yes  # 新文件继承目录权限
+
+
+   guest account = smbguest   # 指定 guest 映射到此用户
+   force user = smbguest      # 强制所有操作以此用户身份执行
+
+
+针对windows不能访问。
+------------------------------------------------------
+
+1、sudo useradd -s /sbin/nologin -M smbguest
+并把要访问的目录权限给smbguest,
+usermod -aG xsb smbguest
+
+2、sudo smbpasswd -a smbguest
+# 输入密码，比如 "guest" 或直接回车设空密码（部分系统不允许空密码）
+
+
+3、在smb.conf中
+guest account = smbguest   # 指定 guest 映射到此用户
+force user = smbguest      # 强制所有操作以此用户身份执行
+
+4、restart
 
 
 -----------------------------------------------------------
@@ -45,3 +72,29 @@ sudo systemctl enable smbd nmbd
 
  测试配置文件语法
 testparm
+
+本地快速测试（关键！）
+smbclient -L //localhost -U xsb01  # 输入密码检查可见共享
+smbclient //localhost/share -U xsb01  # 尝试上传文件
+
+
+============================================================
+linux下挂载
+
+1、安装smb客户端
+apt install cifs-utils -y
+
+2、本地建mapping的目录
+mkdir /home/samba/xxxx
+
+3、创建密码文件
+vim ~/.smbcredentials   #文件名可以复杂  权限 600
+username=smbguest
+password=guest
+
+4、修改自动挂载文件
+/etc/fstab
+//192.168.0.70/share /home/yematech/samba cifs credentials=/home/yematech/.smbcred,uid=1000,gid=1000,file_mode=0664,dir_mode=0775,nofail,user,iocharset=utf8 0 0
+
+5、手动挂载
+sudo mount.cifs //xxx.xxx.xxx.xxx/share /home/samba/xxxx -o user=administrator,pass=123456
