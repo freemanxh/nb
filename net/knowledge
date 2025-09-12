@@ -22,17 +22,25 @@ dig +trace name
 
 
 3、nc
-1、聊天
+1）、聊天
 nc -l 12345
 nc 192.168.0.22 12345
 
-2、端口扫描
+2）、端口扫描
 nc -z -v -n -w 2 192.168.0.22 20-30000
 
-3、传输文件
+3）、传输文件
 server: nc -v -l 12345 < book_out.txt
 client: nc -v -n 192.168.0.20 12345 > book_in.txt
 
-4、传输目录
+4）、传输目录
 tar -cvPf - /root/book/ | nc -l 12345
 nc -n 192.168.0.22 12345 | tar -xvPf -
+
+
+4、ssh-copy-id
+ssh-copy-id "-p 22000 nameB@machineB"
+
+
+
+
