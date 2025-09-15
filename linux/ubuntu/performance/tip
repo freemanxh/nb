@@ -1,3 +1,23 @@
 1、top
 c 查看全路径
 H 看线程
+
+2、iostat 设备级I/O统计
+
+iostat -x nvme0n1 1
+iostat -p sda 1
+iostat -p nvme0n1 1
+
+ 1. 设备饱和？
+    %util > 80% 且持续 → 设备忙
+    avgqu-sz > 1 → 请求排队
+    
+ 2. I/O 延迟高？
+    await > 10ms（HDD）或 > 1ms（SSD）→ 慢！
+    r_await / w_await 单独高 → 读/写慢
+
+检测 I/O 瓶颈（await > 10ms 或 %util > 80%）
+iostat -x 1 | awk '$14>10 || $NF>80 {print "🚨 I/O 瓶颈！设备: " $1 ", await=" $14 "ms, %util=" $NF "%"}'
+
+
+
