@@ -19,5 +19,21 @@ iostat -p nvme0n1 1
 检测 I/O 瓶颈（await > 10ms 或 %util > 80%）
 iostat -x 1 | awk '$14>10 || $NF>80 {print "🚨 I/O 瓶颈！设备: " $1 ", await=" $14 "ms, %util=" $NF "%"}'
 
+3、sar
 
+sudo vim /etc/default/sysstat
+ENABLED="true"
+sudo systemctl enable sysstat
+sudo systemctl start sysstat
+
+#查看昨天 CPU 峰值（假设昨天是 13 号）
+sar -u -f /var/log/sysstat/sa13 | awk 'NR>3 {max=($8>max)?$8:max} END {print "Yesterday max %idle: " max "%"}'
+#检测 I/O 瓶颈（%iowait > 20%）
+sar -u 1 10 | awk '$6>20 {print "🚨 I/O 瓶颈！%iowait=" $6 "% at " $1 " " $2}'
+#查看内存使用趋势（今天）
+sar -r | awk 'NR>3 {print $1, $5}' | column -t
+#找出哪个时间段磁盘最忙（%util > 80%）
+sar -d -p -f /var/log/sa/sa01 | awk '$12>80 {print "🚨 高负载！设备: " $2 ", 时间: " $1 " " $2 ", %util=" $12 "%"}'
+#监控网卡流量（eth0）
+sar -n DEV 1 | grep eth0
 
