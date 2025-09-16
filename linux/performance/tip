@@ -58,3 +58,11 @@ sudo systemctl reload cron
     missingok
     notifempty
 }
+
+
+4、ssh-copy-id
+ssh-copy-id "-p 22000 nameB@machineB"
+
+5、增加user并加入sudo组
+adduser xuhui
+usermod -aG sudo xuhui
