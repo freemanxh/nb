@@ -38,8 +38,11 @@ tar -cvPf - /root/book/ | nc -l 12345
 nc -n 192.168.0.22 12345 | tar -xvPf -
 
 
-4、ssh-copy-id
-ssh-copy-id "-p 22000 nameB@machineB"
+4、MTU
+普通用户：保持默认 1500，除非你用 PPPoE 或 VPN
+PPPoE 用户：务必设为 1492
+WireGuard / Tailscale 用户：设为 1420
+不确定？ → 用 ping -M do -s XXX 测试路径 MTU
 
 
 
