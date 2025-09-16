@@ -9,7 +9,6 @@ docker run -d \
 
 -----------------------------------------------------------------
   
-  
 networks:
   net_music:
     driver: bridge
@@ -27,7 +26,6 @@ x-environment: &default-environment
 services:
   musics-server:
     container_name: musics_navidrome
-    user: "1000:1000"
     restart: unless-stopped
     image: "deluan/navidrome"
     networks:
@@ -35,8 +33,15 @@ services:
     ports:
       - "4533:4533"
     volumes:
-      - /nfs/nas_hdd1/musics:/music
+      - "/nfs/nas_hdd1/musics:/music:ro"
+      - "./data:/data"
     environment:
       <<: *default-environment
       ND_ENABLEFOLDERVIEW: true
+      ND_MUSICFOLDER: /music
+      ND_SCANSCHEDULE: 10m
+      ND_LOGLEVEL: info
+      ND_SESSIONTIMEOUT: 720h
+      ND_BASEURL: ""
+      ND_AUTOLOGIN: "false"
     logging: *default-logging
