@@ -37,3 +37,25 @@ sar -d -p -f /var/log/sa/sa01 | awk '$12>80 {print "🚨 高负载！设备: " $
 #监控网卡流量（eth0）
 sar -n DEV 1 | grep eth0
 
+##、更改sar的日志采集频率
+/etc/default/sysstat
+ENABLED="true"
+
+/etc/cron.d/sysstat
+*/10 * * * * root /usr/lib/sysstat/sa1 1 1 
+改为1分钟
+*/1 * * * * root /usr/lib/sysstat/sa1 1 1
+
+sudo systemctl reload cron 
+
+
+# 自动清理旧数据 
+编辑 /etc/logrotate.d/sysstat
+/var/log/sa/sa* {
+    weekly
+    rotate 4
+    compress
+    missingok
+    notifempty
+}
+
