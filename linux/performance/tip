@@ -98,6 +98,28 @@ sudo umount /mnt/usb
 # 在宿主机上查看容器内进程占用
 sudo fuser -v /var/lib/docker/overlay2/容器ID/merged/path/to/file
 
+6、vmstat
+vmstat -aw 1
+vmstat 1
+
+procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----
+ r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st
+ 1  0      0 123456  78900 456789    0    0    10    20  100 200 10  5 85  0  0
+ 
+ r>cores 高 → CPU 忙；b>0 高 → 磁盘/网络卡
+ si/so 持续 > 0 → 系统在疯狂换页 → 性能暴跌！
+ wa 高 → 磁盘慢；us+sy 高且 id 低 → CPU 忙；st 高 → 虚拟机宿主机过载
+ 
+ 诊断 I/O 瓶颈
+vmstat 1
+# 观察：b > 0, wa > 20%, bi/bo 高
+诊断内存不足
+vmstat -a 1
+# 观察：si/so > 0, free 持续下降, inactive 不增长
+诊断 CPU 瓶颈
+vmstat 1
+# 观察：r > CPU核数 且 id < 20%
+
 ======================================================================
 
 4、ssh-copy-id
