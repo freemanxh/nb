@@ -75,6 +75,29 @@ sudo lsof -i @8.8.8.8
 #找出所有 TCP ESTABLISHED 连接
 sudo lsof -i -sTCP:ESTABLISHED
 
+5、fuser
+查看谁在占用某个文件（解决“删不掉/改不了”）
+fuser -v /var/log/nginx/access.log
+找出并杀死占用日志文件的进程
+sudo fuser -k /var/log/myapp.log
+查看谁在占用某个端口（解决端口冲突）
+fuser 80/tcp
+fuser 3306/tcp
+查看谁在占用某个设备/挂载点（解决“无法 umount”）
+fuser -vm /mnt/usb
+fuser -vm /dev/sdb1
+
+# 1. 查看谁在用
+fuser -vm /mnt/usb
+# 2. 交互式杀死
+sudo fuser -kmi /mnt/usb
+# 3. 卸载
+sudo umount /mnt/usb
+
+在 Docker 容器中使用 fuser（需权限）
+# 在宿主机上查看容器内进程占用
+sudo fuser -v /var/lib/docker/overlay2/容器ID/merged/path/to/file
+
 ======================================================================
 
 4、ssh-copy-id
