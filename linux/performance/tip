@@ -59,6 +59,23 @@ sudo systemctl reload cron
     notifempty
 }
 
+4、lsof
+lsof -p pid
+lsof -u xuhui
+lsof -i:port
+#查看文件被谁占用
+sudo lsof 文件路径
+#找出所有监听端口的进程
+sudo lsof -i -sTCP:LISTEN
+#找出所有被删除但仍占用的文件
+sudo lsof +L1
+sudo lsof | grep deleted
+#找出访问某个 IP 的所有连接
+sudo lsof -i @8.8.8.8
+#找出所有 TCP ESTABLISHED 连接
+sudo lsof -i -sTCP:ESTABLISHED
+
+======================================================================
 
 4、ssh-copy-id
 ssh-copy-id "-p 22000 nameB@machineB"
