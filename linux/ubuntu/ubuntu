@@ -115,7 +115,7 @@ ENABLED="true"
 sudo systemctl reload cron 
 
 
-#8、服务器生成新密钥
+#8、服务器生成新密钥用于ssh
 sudo rm /etc/ssh/ssh_host_*
 sudo ssh-keygen -A
 sudo systemctl restart sshd
