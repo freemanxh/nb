@@ -120,6 +120,20 @@ vmstat -a 1
 vmstat 1
 # 观察：r > CPU核数 且 id < 20%
 
+7、mpstat
+查看所有 CPU 的实时动态（每秒刷新）
+mpstat -P ALL 1
+只监控某个特定 CPU 核心（如 CPU 2）
+mpstat -P 2 1
+输出人类可读的“时间戳 + CPU 使用率”（配合日志分析） (需要先安装 moreutils)
+mpstat -P ALL 1 | ts '[%Y-%m-%d %H:%M:%S]'
+
+查 CPU + 进程	mpstat 1 + top -H
+查 CPU + 磁盘	mpstat 1 + iostat -x 1
+查 CPU + 网络	mpstat 1 + sar -n DEV 1
+查 CPU + 上下文切换	mpstat 1 + vmstat 1
+查 CPU + 中断分布	mpstat -I ALL 1 + cat /proc/interrupts
+
 ======================================================================
 
 4、ssh-copy-id
