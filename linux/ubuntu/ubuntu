@@ -115,6 +115,12 @@ ENABLED="true"
 sudo systemctl reload cron 
 
 
+#8、服务器生成新密钥
+sudo rm /etc/ssh/ssh_host_*
+sudo ssh-keygen -A
+sudo systemctl restart sshd
+
+
 # 自动清理旧数据 
 编辑 /etc/logrotate.d/sysstat
 /var/log/sa/sa* {
