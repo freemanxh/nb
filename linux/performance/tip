@@ -134,6 +134,43 @@ mpstat -P ALL 1 | ts '[%Y-%m-%d %H:%M:%S]'
 查 CPU + 上下文切换	mpstat 1 + vmstat 1
 查 CPU + 中断分布	mpstat -I ALL 1 + cat /proc/interrupts
 
+
+8、nohup
+自定义输出文件
+nohup python3 my_server.py > server.log 2>&1 &
+2>&1：标准错误也重定向到 server.log
+
+完全静默运行（不记录输出）
+nohup python3 my_server.py > /dev/null 2>&1 &
+
+定时心跳检测
+nohup sh -c 'while true; do echo "alive" >> /tmp/keepalive.log; sleep 60; done' > /dev/null 2>&1 &
+
+----------------------------------------
+nohup , disown
+disown是对忘记nohup的补充
+disown -h %{jobid} #为jobs查出的作业号
+setid , screen
+
+systemd / supervisor
+systemd
+# /etc/systemd/system/myapp.service
+[Unit]
+Description=My Python App
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/myapp
+ExecStart=/usr/bin/python3 /opt/myapp/app.py
+Restart=always
+StandardOutput=file:/var/log/myapp.log
+StandardError=file:/var/log/myapp_error.log
+
+[Install]
+WantedBy=multi-user.target
+
 ======================================================================
 
 4、ssh-copy-id
