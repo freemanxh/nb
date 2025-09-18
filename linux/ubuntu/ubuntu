@@ -121,6 +121,15 @@ sudo ssh-keygen -A
 sudo systemctl restart sshd
 
 
+#9、dmidecode
+sudo dmidecode -t bios
+sudo dmidecode -t system
+判断是否虚拟机
+sudo dmidecode -s system-manufacturer
+获取序列号（脚本用）
+sudo dmidecode -s system-serial-number
+
+
 # 自动清理旧数据 
 编辑 /etc/logrotate.d/sysstat
 /var/log/sa/sa* {
