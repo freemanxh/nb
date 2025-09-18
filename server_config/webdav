@@ -1,0 +1,45 @@
+使用caddy实现webdav
+下载caddy:
+https://caddyserver.com/download
+需要插件中勾选 mholt/caddy-webdav
+
+https://wiki.wbuntu.com/explore/3-caddy-user-manual/
+
+生成密码字符串:sudo ./caddy hash-password
+
+
+
+-----------------------------------
+Caddyfile
+校验文件配置正确性:  ./caddy validate --config ./Caddyfile
+格式化文件配置: ./caddy fmt --overwrite
+#以下为正文
+
+{
+	auto_https off
+	order webdav before file_server
+}
+(webdavconf) {
+	@get method GET
+	encode zstd gzip
+	log {
+		output file ./caddy.log
+	}
+	root * /home/xuhui/temp
+	basic_auth {
+		# *1lx@}LP$Q'!1b[W[62O&0ZE7=K{j1}O
+		# $2a$14$C6.MbZNUn6Uf8ccWkJ/35O/C5DtOV4.Ka2N0WcsauK174tuSVJquq
+		#123456
+		user1 $2a$14$fEAF016bY1aaqW7p.tfXkeu1N8ttvGRKGApfRRIAYD5Hb1MfXeQ2K
+		user2 $2a$14$fEAF016bY1aaqW7p.tfXkeu1N8ttvGRKGApfRRIAYD5Hb1MfXeQ2K
+	}
+	route {
+		file_server @get browse
+		webdav
+	}
+}
+
+http://:80 {
+	import webdavconf
+}
+
