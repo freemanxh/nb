@@ -50,7 +50,7 @@ events {
     multi_accept on;            # 一次接受多个连接（提升吞吐）
 }
 
-http {yematech2018
+http {
     include       /etc/nginx/mime.types;
     default_type  application/octet-stream;
 
