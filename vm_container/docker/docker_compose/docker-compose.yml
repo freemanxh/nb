@@ -1,0 +1,308 @@
+# docker-compose.prod.yml - 生产环境 Docker Compose 配置
+
+version: '3.8' # 或更高稳定版本，如 '3.9'
+
+# 定义自定义网络，实现服务间通信和外部隔离
+networks:
+  backend: # 用于后端服务（App, DB, Cache）之间的通信
+    driver: bridge
+    # 可以添加更具体的网络配置，如子网
+    # ipam:
+    #   config:
+    #     - subnet: 172.20.0.0/16
+  frontend: # 如果有独立的前端服务或需要暴露给负载均衡器/反向代理
+    driver: bridge
+
+# 定义可复用的配置片段 (x-*)
+x-common-config: &common-config
+  restart: unless-stopped # 生产环境推荐策略：除非被手动停止，否则总是重启
+  logging:
+    driver: "json-file" # 默认驱动，适合大多数情况
+    options:
+      max-size: "10m"   # 单个日志文件最大 10MB
+      max-file: "3"     # 最多保留 3 个日志文件（轮转）
+      # 也可以考虑使用 'syslog', 'fluentd', 'gelf' 等对接集中式日志系统
+  security_opt:
+    - no-new-privileges:true # 防止容器进程获得新权限
+  # read_only: true # 如果应用不需要写入文件系统，可以设为只读（需确保应用兼容）
+
+# 定义服务
+services:
+
+  # --- 应用服务 ---
+  app:
+    image: your-app-image:1.2.3 # 替换为你的应用镜像和确切版本
+    <<: *common-config # 引用公共配置
+    container_name: myapp-prod # 自定义容器名，便于识别
+    # build: # 通常生产环境直接使用预构建好的镜像，注释掉 build
+    #   context: .
+    #   dockerfile: Dockerfile.prod
+    ports:
+      # 不直接将应用端口暴露到宿主机公网！
+      # 通常由前置的反向代理（如 Nginx, Traefik）或负载均衡器处理外部流量
+      # - "8080:8080" # 仅在需要调试或特定架构下临时使用
+    expose:
+      - "8080" # 告诉 Docker 此容器监听 8080 端口，供同一网络内其他服务访问
+    environment:
+      # 从 .env.prod 文件加载环境变量
+      <<: *app-env-vars # 这里引用下面定义的 x-app-env-vars 片段
+      # 也可以直接在这里设置非敏感的、固定的环境变量
+      # NODE_ENV: production
+      # LOG_LEVEL: info
+    env_file:
+      - .env.prod # 加载生产环境变量文件
+    volumes:
+      # 挂载配置文件（如果应用需要动态配置文件）
+      # - ./config.prod.yaml:/app/config.yaml:ro # ro = read-only
+      # 挂载静态文件目录（如果应用提供静态文件且不由专用Web服务器处理）
+      # - ./static:/app/static:ro
+      # 挂载数据卷（谨慎使用，确保数据持久化策略正确）
+      # - app_data:/var/lib/myapp/data
+    depends_on:
+      db:
+        condition: service_healthy # 等待数据库健康后再启动应用
+      redis:
+        condition: service_started # Redis 启动即可（可根据需要改为 healthcheck）
+    networks:
+      - backend
+      - frontend # 如果应用需要直接接收来自前端网络的请求（通常不推荐）
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"] # 替换为你的健康检查端点
+      # 或者对于非 HTTP 服务: ["CMD-SHELL", "your-health-check-command"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s # 给应用足够时间启动
+    deploy: # 主要用于 Swarm Mode，但在 Compose 中部分字段（如 resources）也可能被某些平台识别
+      resources:
+        limits:
+          cpus: '1.0' # 限制 CPU 使用
+          memory: 512M # 限制内存使用
+        reservations:
+          memory: 256M # 预留内存
+    # user: "1000:1000" # 指定非 root 用户运行，提高安全性（需镜像支持）
+
+  # --- 数据库服务 (PostgreSQL 示例) ---
+  db:
+    image: postgres:15-alpine # 使用轻量级 Alpine 版本，并指定确切主版本
+    <<: *common-config
+    container_name: myapp-db-prod
+    environment:
+      <<: *db-env-vars # 引用数据库环境变量片段
+    env_file:
+      - .env.prod
+    volumes:
+      - db_data:/var/lib/postgresql/data # 关键！持久化数据库数据
+      # - ./init-scripts:/docker-entrypoint-initdb.d # 初始化脚本（首次运行时）
+    ports:
+      # - "5432:5432" # 通常不应暴露数据库端口到公网！仅限内部网络访问
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+        reservations:
+          memory: 512M
+
+  # --- 缓存服务 (Redis 示例) ---
+  redis:
+    image: redis:7-alpine
+    <<: *common-config
+    container_name: myapp-redis-prod
+    command: redis-server --requirepass $${REDIS_PASSWORD} # 从环境变量获取密码
+    # 或者使用配置文件: command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    # volumes:
+    #   - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
+    #   - redis_data:/data # 如果需要持久化 Redis 数据
+    ports:
+      # - "6379:6379" # 通常不应暴露缓存端口到公网！
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+        reservations:
+          memory: 128M
+
+  # --- 反向代理 / Web 服务器 (Nginx 示例) ---
+  # 通常作为入口点，处理 SSL 终止、负载均衡、静态文件等
+  web:
+    image: nginx:1.25-alpine
+    <<: *common-config
+    container_name: myapp-web-prod
+    ports:
+      - "80:80" # HTTP
+      - "443:443" # HTTPS (需要挂载证书)
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro # 挂载自定义 Nginx 配置
+      - ./conf.d:/etc/nginx/conf.d:ro # 挂载站点配置
+      - ./ssl_certs:/etc/nginx/ssl:ro # 挂载 SSL 证书和私钥
+      - ./html:/usr/share/nginx/html:ro # 静态文件（如果需要）
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - frontend # 接收外部流量
+      - backend # 转发请求到后端应用
+    healthcheck:
+      test: ["CMD", "nginx", "-t"] # 检查配置语法
+      # 或者检查监听端口: ["CMD", "netstat", "-tlnp", "|", "grep", ":80"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+        reservations:
+          memory: 64M
+
+# 定义环境变量片段 (避免在 services 中重复)
+x-app-env-vars: &app-env-vars
+  DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:${DB_PORT}/${DB_NAME}
+  REDIS_URL: redis://:${REDIS_PASSWORD}@redis:${REDIS_PORT}/0
+  # 其他应用相关的环境变量...
+
+x-db-env-vars: &db-env-vars
+  POSTGRES_DB: ${DB_NAME}
+  POSTGRES_USER: ${DB_USER}
+  POSTGRES_PASSWORD: ${DB_PASSWORD}
+  # POSTGRES_INITDB_ARGS: --data-checksums # 可选：启用数据校验
+
+# 定义命名卷 (用于数据持久化)
+volumes:
+  db_data: # PostgreSQL 数据卷
+    # driver: local # 默认
+    # 可以配置更高级的卷驱动，如 'nfs', 'cifs', 云存储驱动等
+    # driver_opts:
+    #   type: nfs
+    #   o: addr=192.168.1.100,rw
+    #   device: ":/path/to/nfs/share"
+  # redis_data: # 如果需要持久化 Redis
+  # app_data: # 应用数据卷
+
+# 定义环境变量片段结束
+
+
+
+====================================================================
+# .env.prod - 生产环境敏感配置和变量
+# 注意：此文件应加入 .gitignore，切勿提交到版本控制系统！
+
+# --- 应用相关 ---
+APP_ENV=production
+APP_SECRET_KEY=your_very_strong_and_long_secret_key_here_随机生成
+APP_LOG_LEVEL=info
+# APP_ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com # 根据框架要求设置
+
+# --- 数据库相关 ---
+DB_NAME=myapp_prod_db
+DB_USER=myapp_user
+DB_PASSWORD=your_strong_database_password_here
+DB_HOST=db # 与 docker-compose 中的服务名一致
+DB_PORT=5432
+
+# --- Redis 相关 ---
+REDIS_PASSWORD=your_strong_redis_password_here
+REDIS_PORT=6379
+
+# --- 其他服务 ---
+# API_KEY=some_external_service_api_key
+# SMTP_HOST=smtp.your-email-provider.com
+# SMTP_USER=your-email@domain.com
+# SMTP_PASSWORD=your_email_password_or_app_password
+
+# --- Nginx / Web 相关 (如果需要在 compose 中引用) ---
+# CERT_EMAIL=admin@yourdomain.com # 用于 Let's Encrypt 等
+
+
+=====================================================================
+# nginx.conf (简化示例)
+user  nginx;
+worker_processes  auto;
+
+error_log  /var/log/nginx/error.log warn;
+pid        /var/run/nginx.pid;
+
+events {
+    worker_connections  1024;
+}
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  /var/log/nginx/access.log  main;
+
+    sendfile        on;
+    tcp_nopush      on;
+    keepalive_timeout  65;
+
+    gzip  on;
+
+    server {
+        listen 80;
+        server_name yourdomain.com www.yourdomain.com; # 替换为你的域名
+
+        # 强制跳转到 HTTPS (推荐)
+        return 301 https://$server_name$request_uri;
+    }
+
+    server {
+        listen 443 ssl http2;
+        server_name yourdomain.com www.yourdomain.com;
+
+        # SSL 证书配置 (确保证书文件已挂载到容器内的 /etc/nginx/ssl/)
+        ssl_certificate /etc/nginx/ssl/fullchain.pem; # 通常是 fullchain.crt
+        ssl_certificate_key /etc/nginx/ssl/privkey.pem; # 通常是 privkey.key
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers HIGH:!aNULL:!MD5;
+
+        location / {
+            proxy_pass http://app:8080; # 转发到 app 服务的 8080 端口
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # 静态文件处理 (如果应用提供且希望由 Nginx 处理)
+        # location /static/ {
+        #     alias /usr/share/nginx/html/static/;
+        #     expires 1y;
+        #     add_header Cache-Control "public, immutable";
+        # }
+
+        # 健康检查端点 (可选，供外部监控)
+        # location /health {
+        #     access_log off;
+        #     return 200 'OK';
+        #     add_header Content-Type text/plain;
+        # }
+    }
+}
+
+
+
+
