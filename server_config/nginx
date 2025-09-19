@@ -1,11 +1,175 @@
 docker 启动 nginx
-1、需求创建三个目录
+1、需求创建四个目录
 /nginx/conf
-  /nginx/conf/conf.d
+/nginx/conf/conf.d
 /nginx/html
 /nginx/log
 2、需要把nginx中的image中的相应的配置与html给cp出来放在上面三个目录中
 最好是先启一个tmp的ngix，把相应的目录给cp出来，后面有相应的文件的源码 （ docker run -p 8981:80 -d --name nginx_tmp nginx:latest ）
+
+
+
+#对应容器：/etc/nginx/nginx.conf
+#本地目录：/nginx/conf/nginx.conf
+#以下为正文
+user  nginx;
+worker_processes  auto;
+
+error_log  /var/log/nginx/error.log notice;
+pid        /run/nginx.pid;
+
+events {
+    worker_connections  1024;
+    use epoll;                  # Linux 推荐使用 epoll（高性能）
+    multi_accept on;            # 一次接受多个连接（提升吞吐）
+}
+
+http {yematech2018
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  /var/log/nginx/access.log  main;
+
+    sendfile        on;
+    tcp_nopush      on;         # 优化网络包发送
+    tcp_nodelay     on;         # 实时发送小包（适合 API）
+    keepalive_timeout  65;
+
+    #开启 gzip 压缩（节省带宽）
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1k;
+    gzip_comp_level 6;
+    gzip_types text/plain text/css application/json application/javascript;
+
+    include /etc/nginx/conf.d/*.conf;
+}
+
+#对应自定义的站点：
+#对应容器：/etc/nginx/conf.d/
+#本地目录：/nginx/conf/conf.d/
+#文件名：custom.conf
+
+server {
+    listen 80;                          # ⭐️⭐️⭐️ 监听端口
+    server_name example.com www.example.com;  # ⭐️⭐️⭐️ 域名
+
+
+    #root vs alias：
+    #root：路径拼接 → root /data; location /img/ { ... } → /data/img/xxx
+    #alias：路径替换 → alias /data/; location /img/ { ... } → /data/xxx
+
+    root /var/www/html;                 # ⭐️⭐️⭐️ 站点根目录
+    index index.html index.htm;         # 默认首页
+
+    # ⭐️⭐️⭐️ 访问日志（可覆盖全局）
+    access_log /var/log/nginx/example.access.log main;
+
+    # ⭐️⭐️⭐️ 错误页面
+    error_page 404 /404.html;
+    error_page 500 502 503 504 /50x.html;
+
+    # ⭐️⭐️⭐️ location：匹配 URI 路径
+    location / {
+        try_files $uri $uri/ =404;      # 尝试文件 → 目录 → 404  try_files：优雅降级，常用于 SPA（如 Vue/React）
+    }
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/run/php-fpm.sock;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+}
+
+
+
+====================================================================================
+location 块(请求路由匹配)
+
+    = → 精确匹配（最高优先级） 精确匹配首页，提升性能
+    ^~ → 前缀匹配，匹配后不再查正则  使用 ^~ 避免正则干扰静态资源
+    ~ → 区分大小写的正则匹配
+    ~* → 不区分大小写的正则匹配  忽略大小写（图片/静态文件）
+    /xxx → 普通前缀匹配（最长前缀优先）
+    / → 默认匹配  是兜底规则，必须有！
+
+------------------------------------------------------------------
+location = / {
+    # 只匹配 http://example.com/
+}
+
+location ^~ /static/ {
+    # 匹配 /static/ 开头，且不再匹配正则（如 .js, .css）
+    expires 1y;
+    add_header Cache-Control "public, immutable";
+}
+
+location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+    expires 1y;
+    add_header Cache-Control "public, immutable";
+}
+
+location / {
+    # 所有其他请求
+    try_files $uri $uri/ /index.html;
+}
+
+------------------------------------------------------------------
+反向代理（Reverse Proxy）
+location /api/ {
+    proxy_pass http://backend_server;   # ⭐️⭐️⭐️ 代理到后端
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+
+---------------------------------------------------------------
+负载均衡
+upstream backend {
+    server 10.0.0.1:8000;
+    server 10.0.0.2:8000;
+    server 10.0.0.3:8000 backup;   # 备用节点
+}
+
+server {
+    location / {
+        proxy_pass http://backend;
+        ...
+    }
+}
+
+------------------------------------------------------------
+HTTPS
+
+server {
+    listen 443 ssl http2;
+    server_name example.com;
+
+    ssl_certificate /path/to/fullchain.pem;      # ⭐️⭐️⭐️ 证书
+    ssl_certificate_key /path/to/privkey.pem;    # ⭐️⭐️⭐️ 私钥
+
+    ssl_protocols TLSv1.2 TLSv1.3;               # ⭐️⭐️⭐️ 安全协议
+    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256;
+    ssl_prefer_server_ciphers off;
+
+    # HSTS（强制 HTTPS）
+    add_header Strict-Transport-Security "max-age=63072000" always;
+
+    root /var/www/html;
+    ...
+}
+
+
+
+
+
+
 
 3、docker run -p 8981:80 \
     -d --name nginx \
@@ -65,38 +229,7 @@ server {
     #}
 }
 
-2.2) /nginx/conf/nginx.conf
-user  nginx;
-worker_processes  auto;
 
-error_log  /var/log/nginx/error.log notice;
-pid        /var/run/nginx.pid;
-
-
-events {
-    worker_connections  1024;
-}
-
-
-http {
-    include       /etc/nginx/mime.types;
-    default_type  application/octet-stream;
-
-    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-                      '$status $body_bytes_sent "$http_referer" '
-                      '"$http_user_agent" "$http_x_forwarded_for"';
-
-    access_log  /var/log/nginx/access.log  main;
-
-    sendfile        on;
-    #tcp_nopush     on;
-
-    keepalive_timeout  65;
-
-    #gzip  on;
-
-    include /etc/nginx/conf.d/*.conf;
-}
 2.3) /nginx/html/index.html
 <!DOCTYPE html>
 <html>
