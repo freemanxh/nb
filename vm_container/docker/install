@@ -1,0 +1,74 @@
+ubuntu server 安装：
+
+docker_install.sh
+
+#!/bin/bash
+set -e
+sudo apt update && sudo apt upgrade -y
+if [ "$1" == "old" ]; then
+        echo "现在delete old docker"
+        sudo apt-get remove -y docker docker-engine docker.io containerd runc
+fi
+
+sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common gnupg lsb-release
+
+echo "🔑 添加 Docker GPG 密钥（现代方式）..."
+curl -fsSL https://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+echo "📥 添加 Docker APT 源..."
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://mirrors.aliyun.com/docker-ce/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+
+sudo apt update
+
+apt-cache madison docker-ce
+echo "📌 请输入要安装的 Docker 版本（例如：5:26.1.4-1~ubuntu.22.04~jammy）："
+read VS
+
+sudo apt-get install -y docker-ce=$VS docker-ce-cli=$VS containerd.io docker-compose-plugin docker-compose
+
+echo "⚙️  配置 Docker daemon（镜像加速 + 日志 + cgroup）..."
+sudo mkdir -p /etc/docker
+#cgroupdriver=systemd：与 Kubernetes 兼容（重要！）
+cat <<EOF | sudo tee /etc/docker/daemon.json
+{
+  "registry-mirrors": [
+    "https://docker.1ms.run",
+    "https://docker.xuanyuan.me",
+    "https://docker.aityp.com",
+    "https://docker.mirrors.ustc.edu.cn",
+    "https://hub-mirror.c.163.com",
+    "https://mirror.baidubce.com"
+  ],
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m",
+    "max-file": "3"
+  },
+  "default-runtime": "runc",                 
+  "default-address-pools": [                 
+    {
+      "base": "10.200.0.0/16",
+      "size": 24
+    }
+  ],
+  "storage-driver": "overlay2",
+  "features": {
+    "buildkit": true
+  }
+}
+EOF
+
+sudo systemctl enable docker --now
+sudo systemctl restart docker
+
+echo "👥 将当前用户加入 docker 组..."
+sudo groupadd docker 2>/dev/null || true
+sudo usermod -aG docker $USER
+
+echo "✅ 安装完成！"
+echo "⚠️  请重新登录系统，或运行 'su - $USER' 使 docker 组生效"
+echo "🧪 验证安装："
+echo "   docker --version"
+echo "   docker compose version"
+echo "   docker run --rm hello-world"
