@@ -86,17 +86,19 @@ services:
 smallman.conf
 
     server {
-        listen 80;
-        server_name www.smallman.com.cn;
-        
+        listen 80 default_server;
+        #        server_name www.smallman.com.cn;
+
         location = /nginx-health {
             access_log off;
             add_header Content-Type text/plain;
             return 200 "OK";
+            allow all;
         }
-
+        #        location = /{
         # 强制跳转到 HTTPS (推荐)
-        #return 301 https://$server_name$request_uri;
+        #    return 301 https://$server_name$request_uri;
+        #}
     }
 
     server {
