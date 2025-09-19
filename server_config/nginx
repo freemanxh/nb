@@ -8,33 +8,132 @@ docker 启动 nginx
 最好是先启一个tmp的ngix，把相应的目录给cp出来，后面有相应的文件的源码 （ docker run -p 8981:80 -d --name nginx_tmp nginx:latest ）
 
 
+=====================================================================================================
 
+nginx/
+├── conf
+│   ├── conf.d
+│   │   ├── default.conf
+│   │   └── smallman.conf
+│   └── nginx.conf
+├── docker-compose.yml
+├── html
+├── log
+│   ├── access.log
+│   └── error.log
+└── ssl
+    ├── cert.pem
+    ├── fullchain.pem
+    └── privkey.pem
+
+----------------------------------------------------------------------------------------------
 docker_compose.yml
 
+networks:
+  frontend: 
+    driver: bridge
+
+
+x-common-config: &common-config
+  restart: unless-stopped 
+  logging:
+    driver: "json-file" 
+    options:
+      max-size: "10m"
+      max-file: "3"
+  environment:
+    - TZ=Asia/Shanghai
+  security_opt:
+    - no-new-privileges:true # 防止容器进程获得新权限
+
+
 services:
-  nginx_nexus:
-    image: 'nginx:latest'
-    container_name: 'nginx_nexus'
-    restart: always
-    environment:
-      - TZ=Asia/Shanghai
+  # 通常作为入口点，处理 SSL 终止、负载均衡、静态文件等
+  nginx:
+    image: nginx:1.29.1-alpine
+    <<: *common-config
+    container_name: nginx
     ports:
-      #- '28080:28080' #nexus web
-      #- '28081:28081' #nexus docker group
-        #- '28020:28020' #harbor web
-      - '28021:28021' #harbor 
-      - '28081:28081' #nexus web
+      - "80:80"
+      - "443:443"
     volumes:
-      - '/home/yematech/docker_data/nginx/conf/nginx.conf:/etc/nginx/nginx.conf'
-      - '/home/yematech/docker_data/nginx/conf/conf.d:/etc/nginx/conf.d'
-      - '/home/yematech/docker_data/nginx/ssl:/ssl'
-      - '/home/yematech/docker_data/nginx/html:/usr/share/nginx/html'
-      - '/home/yematech/docker_data/nginx/log:/var/log/nginx'
+      - ./conf/nginx.conf:/etc/nginx/nginx.conf:ro 
+      - ./conf/conf.d:/etc/nginx/conf.d
+      - ./ssl:/etc/nginx/ssl:ro 
+      - ./html:/usr/share/nginx/html:ro
+      - ./log:/var/log/nginx
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+    networks:
+      - frontend 
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/nginx-health"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          memory: 128M
 
 
 
+-------------------------------------------------------------------------------
+smallman.conf
+
+    server {
+        listen 80;
+        server_name www.smallman.com.cn;
+        
+        location = /nginx-health {
+            access_log off;
+            add_header Content-Type text/plain;
+            return 200 "OK";
+        }
+
+        # 强制跳转到 HTTPS (推荐)
+        #return 301 https://$server_name$request_uri;
+    }
+
+    server {
+        listen 443 ssl;
+        server_name music.smallman.com.cn;
+
+        # SSL 证书配置 (确保证书文件已挂载到容器内的 /etc/nginx/ssl/)
+        ssl_certificate /etc/nginx/ssl/fullchain.pem;
+        ssl_certificate_key /etc/nginx/ssl/privkey.pem;
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers HIGH:!aNULL:!MD5;
+
+        location / {
+            proxy_pass http://172.19.235.169:6698/musics/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # 静态文件处理 (如果应用提供且希望由 Nginx 处理)
+        # location /static/ {
+        #     alias /usr/share/nginx/html/static/;
+        #     expires 1y;
+        #     add_header Cache-Control "public, immutable";
+        # }
+
+        # 健康检查端点 (可选，供外部监控)
+        # location /health {
+        #     access_log off;
+        #     return 200 'OK';
+        #     add_header Content-Type text/plain;
+        # }
+    }
+
+
+==========================================================================================
 #对应容器：/etc/nginx/nginx.conf
 #本地目录：/nginx/conf/nginx.conf
 #以下为正文
