@@ -1,14 +1,7 @@
+先准备密码：
 PL89velRt@+qBsl$
 
-
-
-
-
-
-
-
 1、创建目录结构
-
 mkdir -p ~/internal-ca/{certs,crl,newcerts,private}
 touch ~/internal-ca/index.txt
 echo 1000 > ~/internal-ca/serial
@@ -28,17 +21,12 @@ openssl req -x509 -new -key private/ca.key.pem \
     -subj "/C=CN/ST=Beijing/L=Beijing/O=MyCompany/CN=MyCompany Internal Root CA"
     
 输入同一密码
-
-openssl req -x509 -new -key private/ca.key.pem \
+如：openssl req -x509 -new -key private/ca.key.pem \
     -days 3650 \
     -sha256 \
     -extensions v3_ca \
     -out certs/ca.cert.pem \
     -subj "/C=CN/ST=Chengdu/L=Chengdu/O=yematech.com/CN=yematech.com Internal Root CA"
-    
-    
-    
-    
 
 4、为服务器生成私钥
 openssl genrsa -out private/server.key.pem 2048
@@ -50,11 +38,10 @@ openssl req -new -key private/server.key.pem \
     -subj "/C=CN/ST=Beijing/L=Beijing/O=MyCompany/CN=192.168.0.11" \
     -addext "subjectAltName = IP:192.168.0.11,DNS:myapp.local,DNS:localhost"
     
-openssl req -new -key private/server.key.pem \
+如：openssl req -new -key private/server.key.pem \
     -out server.csr \
     -subj "/C=CN/ST=Chengdu/L=Chengdu/O=yematech.com/CN=192.168.0.14" \
     -addext "subjectAltName = IP:192.168.0.14,DNS:yematech.com,DNS:yematech.local,DNS:yematech.test"
-    
     
 6、用根 CA 签发服务器证书
 openssl x509 -req -in server.csr \
@@ -67,18 +54,14 @@ openssl x509 -req -in server.csr \
     -extfile <(printf "subjectAltName=IP:192.168.0.11,DNS:myapp.local,DNS:localhost")
     
 输入同一密码
-
-
- openssl x509 -req -in server.csr \
+如：openssl x509 -req -in server.csr \
     -CA certs/ca.cert.pem \
     -CAkey private/ca.key.pem \
     -CAcreateserial \
     -out certs/server.cert.pem \
     -days 365 \
     -sha256 \
-    -extfile <(printf "subjectAltName=IP:192.168.0.14,DNS:yematech.com,DNS:yematech.local,DNS:yematech.test")
-    
-    
+    -extfile <(printf "subjectAltName=IP:192.168.0.14,DNS:yematech.com,DNS:yematech.local,DNS:yematech.test")  
 
 7、验证证书内容
 openssl x509 -in certs/server.cert.pem -text -noout
@@ -86,10 +69,9 @@ openssl x509 -in certs/server.cert.pem -text -noout
 
 
 8、nginx 配置
-
 server {
     listen 443 ssl;
-    server_name 192.168.0.11 myapp.local;
+    server_name 192.168.0.11 yematech.com yematech.local yematech.test;
 
     ssl_certificate /path/to/internal-ca/certs/server.cert.pem;
     ssl_certificate_key /path/to/internal-ca/private/server.key.pem;
@@ -112,14 +94,142 @@ server {
 # HTTP 跳转 HTTPS
 server {
     listen 80;
-    server_name 192.168.0.11 myapp.local;
+    server_name 192.168.0.11 yematech.com yematech.local yematech.test;
     return 301 https://$host$request_uri;
 }
 
+-------------------------------------------------------------------------------------
+windows客户端安装ca (已经验证)
+在 Windows 上安装 PEM 证书文件，可以按照以下步骤进行操作：
 
+打开 Windows 中的“证书管理器”
+在 Windows 搜索栏中键入“certmgr.msc”，然后按 Enter 键打开“证书管理器”。
+
+选择证书存储位置
+在“证书管理器”窗口中，展开“受信任的根证书颁发机构”文件夹，并右键单击“证书”文件夹。在右键菜单中选择“所有任务” ->“导入”，打开“证书导入向导”对话框。
+
+选择证书文件
+在“证书导入向导”对话框中，选择“下一步”，然后点击“浏览”按钮，选择 PEM 证书文件，并选择“打开”。
+
+
+macOS
+
+    双击 ca.cert.pem
+    钥匙串访问 → 找到 “MyCompany Internal Root CA”
+    双击 → “信任” → “使用此证书时：始终信任”
+    关闭窗口，输入密码保存
+
+
+
+linux
 sudo cp ca.cert.pem /usr/local/share/ca-certificates/mycompany-root-ca.crt
 sudo update-ca-certificates
 
     
-    
+Android（7.0+）
+
+    设置 → 安全 → 加密与凭据 → 安装证书 → CA 证书
+    选择 ca.cert.pem
+    重命名（去掉 .pem）→ 安装
+    ⚠️ 部分 App（如 Chrome）默认不信任用户 CA → 需配置 Network Security Config（见下文）
+
+iOS
+
+    通过邮件/AirDrop/网页下载 ca.cert.pem
+    点击安装 → 设置 → 通用 → 关于本机 → 证书信任设置
+    启用对 “MyCompany Internal Root CA” 的完全信任
+
+App 开发者注意（Android Network Security Config）
+res/xml/network_security_config.xml
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <domain-config>
+        <domain includeSubdomains="true">192.168.1.100</domain>
+        <domain includeSubdomains="true">myapp.local</domain>
+        <trust-anchors>
+            <certificates src="@raw/mycompany_ca"/>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+</network-security-config>
+ca.cert.pem 放入 res/raw/mycompany_ca.pem（去掉 .pem 后缀）
+
+在 AndroidManifest.xml 中引用：
+<application
+    android:networkSecurityConfig="@xml/network_security_config"
+    ... >
+
+
+------------------------------------------------------------------------------------
+
+自动化脚本：一键签发新证书
+#!/bin/bash
+# 文件名：issue-cert.sh
+
+# 用法：./issue-cert.sh 192.168.1.100 myapp.local db.local
+
+if [ $# -eq 0 ]; then
+    echo "❌ 请指定至少一个域名或IP"
+    echo "✅ 用法：./issue-cert.sh 192.168.1.100 myapp.local ..."
+    exit 1
+fi
+
+DOMAINS=("$@")
+COMMON_NAME="${DOMAINS[0]}"
+CERT_NAME=$(echo "$COMMON_NAME" | tr '.' '_')
+
+echo "🔑 生成私钥..."
+openssl genrsa -out private/${CERT_NAME}.key.pem 2048
+
+echo "📝 生成 CSR..."
+SUBJ="/C=CN/ST=Beijing/L=Beijing/O=MyCompany/CN=$COMMON_NAME"
+
+# 生成 SAN 扩展
+SAN=""
+for d in "${DOMAINS[@]}"; do
+    if [[ $d =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        SAN="${SAN}IP:$d,"
+    else
+        SAN="${SAN}DNS:$d,"
+    fi
+done
+SAN=${SAN%,}  # 去掉末尾逗号
+
+echo "subjectAltName=$SAN" > ${CERT_NAME}.ext
+
+openssl req -new -key private/${CERT_NAME}.key.pem \
+    -out ${CERT_NAME}.csr \
+    -subj "$SUBJ"
+
+echo "✍️  签发证书..."
+openssl x509 -req -in ${CERT_NAME}.csr \
+    -CA certs/ca.cert.pem \
+    -CAkey private/ca.key.pem \
+    -CAcreateserial \
+    -out certs/${CERT_NAME}.cert.pem \
+    -days 365 \
+    -sha256 \
+    -extfile ${CERT_NAME}.ext
+
+echo "✅ 证书已生成："
+echo "   私钥：private/${CERT_NAME}.key.pem"
+echo "   证书：certs/${CERT_NAME}.cert.pem"
+
+# 清理临时文件
+rm ${CERT_NAME}.csr ${CERT_NAME}.ext
+
+使用以下脚本
+chmod +x issue-cert.sh
+./issue-cert.sh 192.168.1.100 myapp.local api.local
+
+
+吊销证书：
+# 吊销证书
+openssl ca -revoke certs/server.cert.pem -keyfile private/ca.key.pem -cert certs/ca.cert.pem
+
+# 生成吊销列表（CRL）
+openssl ca -gencrl -keyfile private/ca.key.pem -cert certs/ca.cert.pem -out crl/crl.pem
+在 Nginx 中启用 CRL 检查（可选）：
+ssl_crl /path/to/internal-ca/crl/crl.pem;
+
 
