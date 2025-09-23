@@ -257,6 +257,9 @@ location /api/ {
     proxy_set_header X-Forwarded-Proto $scheme;
 }
 
+proxy_pass 地址带斜杠 /： Nginx 会把 location 路径去掉，然后附加剩余部分。
+proxy_pass 地址不带斜杠 /： Nginx 会把 location 路径保留，然后附加完整路径。
+
 ---------------------------------------------------------------
 负载均衡
 http{
