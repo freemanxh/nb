@@ -4,8 +4,9 @@ docker 启动 nginx
 /nginx/conf/conf.d
 /nginx/html
 /nginx/log
+/nginx/ssl
 2、需要把nginx中的image中的相应的配置与html给cp出来放在上面三个目录中
-最好是先启一个tmp的ngix，把相应的目录给cp出来，后面有相应的文件的源码 （ docker run -p 8981:80 -d --name nginx_tmp nginx:latest ）
+最好是先启一个tmp的nginx，把相应的目录给cp出来，后面有相应的文件的源码 （ docker run -p 8981:80 -d --name nginx_tmp nginx:latest ）
 
 
 =====================================================================================================
