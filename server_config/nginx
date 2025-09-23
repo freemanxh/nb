@@ -218,9 +218,20 @@ server {
 
 ====================================================================================
 location 块(请求路由匹配)
+    #反向代理
+    location /api/ {
+        proxy_pass http://backend;
+    }
+    #静态文件
+    location /static/ {
+        root /var/www;
+    }
+
+----------------------------------------------------------
+    
 
     = → 精确匹配（最高优先级） 精确匹配首页，提升性能
-    ^~ → 前缀匹配，匹配后不再查正则  使用 ^~ 避免正则干扰静态资源
+    ^~ → 非正则最长前缀匹配，匹配后不再查正则  使用 ^~ 避免正则干扰静态资源
     ~ → 区分大小写的正则匹配
     ~* → 不区分大小写的正则匹配  忽略大小写（图片/静态文件）
     /xxx → 普通前缀匹配（最长前缀优先）
@@ -247,6 +258,35 @@ location / {
     try_files $uri $uri/ /index.html;
 }
 
+访问控制
+location /admin/ {
+    allow 192.168.1.0/24;
+    deny all;
+    proxy_pass http://admin_backend;
+}
+
+限速 & 限流
+location /download/ {
+    limit_rate 100k;             # 限速 100KB/s
+    limit_conn addr 1;           # 每IP最多1个连接
+    proxy_pass http://file_server;
+}
+
+    # 4. 用户上传文件（限制访问）
+    location ^~ /uploads/ {
+        internal;                    # 禁止外部直接访问
+        alias /var/uploads/;
+    }
+
+
+查看匹配的 location
+location /api/ {
+    access_log /var/log/nginx/api.log;
+    add_header X-Matched-Location "api";
+    proxy_pass http://backend;
+}
+
+
 ------------------------------------------------------------------
 反向代理（Reverse Proxy）
 location /api/ {
@@ -257,8 +297,9 @@ location /api/ {
     proxy_set_header X-Forwarded-Proto $scheme;
 }
 
-proxy_pass 地址带斜杠 /： Nginx 会把 location 路径去掉，然后附加剩余部分。
-proxy_pass 地址不带斜杠 /： Nginx 会把 location 路径保留，然后附加完整路径。
+proxy_pass 地址带斜杠 /： Nginx 会把 location 路径去掉，然后附加剩余部分。    /api/user → /user
+proxy_pass 地址不带斜杠 /： Nginx 会把 location 路径保留，然后附加完整路径。   /api/user → /api/user
+
 
 ---------------------------------------------------------------
 负载均衡
