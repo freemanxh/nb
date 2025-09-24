@@ -1,13 +1,7 @@
 mkdir -p ./jellyfin/{config,cache,media}
 mkdir -p ./jellyfin/media/{movies,tvshows,music}
 cd ./jellyfin
-
 ---------------------------------------------------------------
-
-
-
-
-docker-compose.yml
 
 networks:
   jellyfin_net: 
@@ -23,8 +17,7 @@ x-common-config: &common-config
       max-file: "3"
   environment:
     - TZ=Asia/Shanghai
-  security_opt:
-    - no-new-privileges:true # 防止容器进程获得新权限
+
 
 
 services:
@@ -33,29 +26,39 @@ services:
     image: jellyfin/jellyfin:latest
     <<: *common-config
     container_name: jellyfin
-    user: 1000:1000
+      #user: 1000:1000
     environment:
-      - PUID=1000
-      - PGID=1000
+      #- PUID=1000
+      #- PGID=1000
+      - JELLYFIN_FFMPEG_PATH=/usr/lib/jellyfin-ffmpeg/ffmpeg
+      - LIBVA_DRIVERS_PATH=/usr/lib/x86_64-linux-gnu/dri
+      - GST_VAAPI_DRIVERS_PATH=/usr/lib/x86_64-linux-gnu/va/drivers
     volumes:
       - ./config:/config
       - ./cache:/cache
-      - ./media:/media:ro
+      - /data:/media:ro
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+      - /usr/lib/x86_64-linux-gnu/dri:/usr/lib/x86_64-linux-gnu/dri
     ports:
       - "8096:8096"
       - "8920:8920"
     networks:
       - jellyfin_net
+    devices:
+      - /dev/dri:/dev/dri
 
-        #devices:
+
+
+
+
+
       # 如果需要硬件转码，取消注释下面设备（见第7节）
       #- /dev/dri:/dev/dri         # Intel QSV / AMD
       #- /dev/nvidia0:/dev/nvidia0 # NVIDIA（还需 nvidia-container-toolkit）
       #- /dev/nvidiactl:/dev/nvidiactl
       #- /dev/nvidia-uvm:/dev/nvidia-uvm
-
+---------------------------------------------------------------
 ===================================================================================================
 硬件转码配置（大幅提升性能！）
 方案1：Intel Quick Sync（QSV）—— 推荐 NUC/Intel 核显用户
