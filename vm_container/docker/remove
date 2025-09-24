@@ -1,0 +1,33 @@
+1：Docker Compose 项目 
+# 进入你的项目目录（含 docker-compose.yml）
+cd ~/jellyfin
+
+# 停止 + 删除容器 + 删除匿名卷 + 删除孤立容器
+docker compose down --volumes --remove-orphans
+
+
+如果你还想删除自定义网络：
+
+# 查看网络
+docker network ls
+
+# 删除网络（如果确定不用）
+docker network rm jellyfin_jellyfin_net
+
+
+2：单容器删除（非 Compose 项目）
+# 停止并删除容器 + 删除关联的匿名卷
+docker rm -f -v 容器名或ID
+
+
+3：手动清理残留资源
+步骤1：删除所有停止的容器
+docker container prune -f
+步骤2：删除所有未使用的卷（⚠️ 谨慎！会删所有匿名卷 + 未挂载命名卷）
+docker volume prune -f
+步骤3：删除所有未使用的网络
+docker network prune -f
+步骤4（可选）：删除无用镜像
+docker image prune -a -f
+步骤5（可选）：清理构建缓存
+docker builder prune -a -f
