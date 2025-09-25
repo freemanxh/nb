@@ -1,3 +1,6 @@
+https://restic.net/
+
+
 1、restic -r /mnt/backup init
 2、restic -r /mnt/backup backup ~/Documents
  restic -r /mnt/backup backup \
