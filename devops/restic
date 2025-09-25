@@ -1,0 +1,95 @@
+1、restic -r /mnt/backup init
+2、restic -r /mnt/backup backup ~/Documents
+ restic -r /mnt/backup backup \
+  --exclude="*.tmp" \
+  --exclude=".cache" \
+  ~/Documents ~/Photos
+  
+ restic -r s3:... backup \
+  --tag "important" \          # 给快照打标签
+  --exclude="*.tmp" \          # 排除临时文件
+  --exclude=".cache" \         # 排除缓存
+  --one-file-system \          # 不跨文件系统（避免备份 /proc /sys）
+  /home /etc /var/lib/docker   # 多路径
+  
+3、restic -r /mnt/backup snapshots
+
+# 列出快照内容（类似 ls）
+4、restic -r repo ls latest
+5、restic -r /mnt/backup restore latest --target /tmp/restore
+#指定快照 
+restic -r /mnt/backup restore a1b2c3d4 --target /tmp/restore
+#只恢复指定文件
+restic -r /mnt/backup restore latest --target /tmp/restore --include /path/to/file.txt
+
+6、清理旧快照（保留策略）
+# 保留最近7天、4周、6月、3年的快照
+restic -r /mnt/backup forget \
+  --keep-daily 7 \
+  --keep-weekly 4 \
+  --keep-monthly 6 \
+  --keep-yearly 3 \
+  --prune
+  
+  
+  
+7、验证与维护
+# 检查仓库完整性（可定期运行）
+restic -r repo check
+
+# 修复（如果 check 发现问题）
+restic -r repo repair
+
+# 查看仓库统计
+restic -r repo stats
+  
+8、
+#!/bin/bash
+export RESTIC_PASSWORD="your_strong_password"
+export AWS_ACCESS_KEY_ID="xxx"
+export AWS_SECRET_ACCESS_KEY="yyy"
+
+restic -r s3:https://s3.us-east-1.amazonaws.com/my-bucket \
+  backup ~/Documents ~/Photos \
+  --exclude=".cache" \
+  --exclude="*.log"
+
+# 清理旧快照
+restic -r s3:... forget --keep-daily 7 --prune
+
+# 每天凌晨 2 点备份
+0 2 * * * /path/to/backup.sh >> /var/log/restic.log 2>&1
+
+
+9、
+1）--host 参数（自动记录主机名）
+
+# 在 web-server 上
+restic -r repo backup --host web01 /var/www
+
+# 在 db-server 上
+restic -r repo backup --host db01 /var/lib/mysql
+
+
+2）--tag 打标签
+
+restic -r repo backup --tag production,mysql /var/lib/mysql
+restic -r repo backup --tag production,nginx /etc/nginx
+
+3）恢复时按 host/tag 过滤
+# 只看 db01 的快照
+restic -r repo snapshots --host db01
+
+# 恢复特定标签
+restic -r repo restore latest --tag mysql --target /restore
+
+
+
+
+
+rclone mount xuhui_home: ./xuhui_home \
+  --vfs-cache-mode writes \
+  --cache-dir /var/cache/rclone \
+  --dir-cache-time 720h \
+  --poll-interval 15s \
+  --daemon
