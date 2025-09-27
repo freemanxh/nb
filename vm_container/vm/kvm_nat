@@ -5,7 +5,8 @@ python3 -m http.server 8001
 在bridge模式下。通常要加 <target dev='vnet0'/>
 
 1.1 nat
-宿主机:
+宿主机: 
+其实可以用加bridge的方式，不影响
 /etc/netplan/00-xx.yaml
   network:
     version: 2
