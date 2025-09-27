@@ -1,3 +1,52 @@
+
+[global]
+   workgroup = WORKGROUP
+   server string = Samba Server %v
+   security = user
+   map to guest = bad user #guest访问的关键
+   #map to guest = Never
+   follow symlinks = yes
+   wide links = yes
+   unix extensions = no
+   log file = /var/log/samba/log.%m
+   max log size = 1000
+   logging = file
+
+[download]
+  comment=download
+  path=/data/hdd1/download
+  # 1. 默认设置：只读（适用于访客和没有在 write list 中的用户）
+  read only=yes
+  browseable=yes
+  #writable = no #如果要让有用户写，必须得让可写
+  #允许匿名访问
+  guest ok = yes #guest
+  # 3. 明确授予 xuhui 写入权限 (此设置会覆盖 read only = yes)
+  write list = xuhui
+
+  create mask = 0660
+  directory mask = 3770
+  #valid users = @xsb,smb_guest,xuhui
+  #inherit permissions = yes  # 新文件继承目录权限
+  guest account = smb_guest   # 指定 guest 映射到此用户
+  #force user = smb_guest
+
+
+---------------------------------------------------
+guest 用户 必须要对此目录有读权限
+xuhui 用户 必胦要对此目录有读写权限
+
+
+sudo smbpasswd -a smbguest
+两个用户都必须要用smbpasswd设置密码
+
+===========================================================
+
+
+
+
+
+
 #应先创建组xsb
 sudo groupadd xsb
 sudo useradd -g xsb -M -s /sbin/nologin xsb01
