@@ -23,7 +23,7 @@ services:
       GITLAB_OMNIBUS_CONFIG: |
         #影响gitlab提供给用户的相应的url字符串
         #注意：external_url 不能用 = 号，不然现在发现对用户回复邮件的地址有问题
-        external_url 'https://git.smarte.tech:50010'
+        external_url 'https://git2.yematech.cn:50010'
         gitlab_rails['gitlab_shell_ssh_port'] = 8822
 
         #内置的nginx配置
@@ -94,69 +94,15 @@ services:
       - '8822:22'
     volumes:
       #GITLAB_HOME需要指定，如果不指定，默认为空白字符串,为同目录的 .env文件中指定
-      - './gitlab/config:/etc/gitlab'
-      - './gitlab/logs:/var/log/gitlab'
-      - './gitlab/data:/var/opt/gitlab'
+      - './config:/etc/gitlab'
+      - './logs:/var/log/gitlab'
+      - './data:/var/opt/gitlab'
       - '/etc/localtime:/etc/localtime:ro'
     shm_size: '512m'
 
 
 
 ================================================================================================================
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 services:
