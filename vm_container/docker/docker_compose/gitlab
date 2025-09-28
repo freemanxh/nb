@@ -1,116 +1,104 @@
 #gitlab 内置pg
 
-
 networks:
   gitlab_net: 
     driver: bridge
-    
+
 x-common-config: &common-config
-  restart: unless-stopped 
+  restart: unless-stopped
   logging:
-    driver: "json-file" 
+    driver: "json-file"
     options:
       max-size: "10m"
       max-file: "10"
-  environment:
-    - TZ=Asia/Shanghai
-
 
 services:
-  gitlab:
-    image: 'gitlab/gitlab-ce:17.6.1-ce.0'
-    <<: *common-config
-    container_name: "gitlab"
-    hostname: 'yema_gitlab'
-    environment:
-      - TZ=Asia/Shanghai
-      GITLAB_OMNIBUS_CONFIG: |
-        #影响gitlab提供给用户的相应的url字符串
-        #注意：external_url 不能用 = 号，不然现在发现对用户回复邮件的地址有问题
-        external_url 'https://git.yematech.cn:50010'
-        gitlab_rails['gitlab_shell_ssh_port'] = 8822
+  gitlab:
+    image: 'gitlab/gitlab-ce:17.6.1-ce.0'
+    <<: *common-config
+    container_name: "gitlab"
+    hostname: 'yema_gitlab'
+    environment:
+      TZ: "Asia/Shanghai"
+      GITLAB_OMNIBUS_CONFIG: |
+        #影响gitlab提供给用户的相应的url字符串
+        #注意：external_url 不能用 = 号，不然现在发现对用户回复邮件的地址有问题
+        external_url 'https://git.smarte.tech:50010'
+        gitlab_rails['gitlab_shell_ssh_port'] = 8822
 
-        #内置的nginx配置
-        nginx['enable'] = true
-        nginx['listen_port'] = 80
-        nginx['listen_https'] = false
-        nginx['proxy_set_headers'] = {
-          "Host" => "$$http_host",
-          "X-Real-IP" => "$$remote_addr",
-          "X-Forwarded-For" => "$$proxy_add_x_forwarded_for",
-          "X-Forwarded-Proto" => "https"
-        }
+        #内置的nginx配置
+        nginx['enable'] = true
+        nginx['listen_port'] = 80
+        nginx['listen_https'] = false
+        nginx['proxy_set_headers'] = {
+          "Host" => "$$http_host",
+          "X-Real-IP" => "$$remote_addr",
+          "X-Forwarded-For" => "$$proxy_add_x_forwarded_for",
+          "X-Forwarded-Proto" => "https"
+        }
 
-        #邮件发送相关配置
-        gitlab_rails['time_zone'] = 'Asia/Shanghai'
-        gitlab_rails['smtp_enable'] = true
-        gitlab_rails['smtp_address'] = "smtp.sina.com"
-        gitlab_rails['smtp_port'] = 25  #465 
-        gitlab_rails['smtp_user_name'] = "yema_no_reply@sina.com" #no-reply@xxx.com
-        #为授权码，不是邮箱密码
-        gitlab_rails['smtp_password'] = "5ae81bcdd09653ff" 
-        gitlab_rails['smtp_domain'] = "sina.com"
-        gitlab_rails['smtp_authentication'] = "login"
-        gitlab_rails['smtp_tls'] = false
-        #gitlab_rails['smtp_enable_starttls_auto'] = true 
-        gitlab_rails['smtp_openssl_verify_mode'] = 'none'
-        gitlab_rails['gitlab_email_enabled'] = true
-        #进入gitlab容器 gitlab-rails console 进入控制台
-        #ActionMailer::Base.delivery_method 应返回  :smtp
-        #ActionMailer::Base.smtp_settings  应返回相应的信息
-        #Notify.test_email('183618@qq.com','Test Page','This is test mail ').deliver_now
-        gitlab_rails['gitlab_email_from'] = "yema_no_reply@sina.com"
-        gitlab_rails['gitlab_email_display_name'] = "Gitlab for Yematech"
-        #此下配置不能省略，不然用户收不到邮件
-        gitlab_rails['gitlab_email_reply_to'] = "yema_no_reply@sina.com" 
-        gitlab_rails['gitlab_email_subject_suffix'] = ""
-        
-        #腾讯企业邮箱
-        #gitlab_rails['smtp_address'] = "smtp.exmail.qq.com"
-        #gitlab_rails['smtp_port'] = 25
-        #gitlab_rails['smtp_user_name'] = "no_reply@yematech.cn"
-        #gitlab_rails['smtp_password'] = "ganlXUHUI111125"
-        #gitlab_rails['smtp_domain'] = "exmail.qq.com"
-        #gitlab_rails['smtp_authentication'] = "login"
-        #gitlab_rails['smtp_tls'] = false
-        #gitlab_rails['smtp_enable_starttls_auto'] = false
-        #gitlab_rails['smtp_openssl_verify_mode'] = 'none'
-        #gitlab_rails['gitlab_email_enabled'] = true
-        #gitlab_rails['gitlab_email_from'] = "no_reply@yematech.cn"
-        #gitlab_rails['gitlab_email_display_name'] = "Gitlab for Yematech"
-        ##此下配置不能省略，不然用户收不到邮件
-        #gitlab_rails['gitlab_email_reply_to'] = "no_reply@yematech.cn"
-        #gitlab_rails['gitlab_email_subject_suffix'] = ""
+        #邮件发送相关配置
+        gitlab_rails['time_zone'] = 'Asia/Shanghai'
+        gitlab_rails['smtp_enable'] = true
+        gitlab_rails['smtp_address'] = "smtp.sina.com"
+        gitlab_rails['smtp_port'] = 25  #465 
+        gitlab_rails['smtp_user_name'] = "yema_no_reply@sina.com" #no-reply@xxx.com
+        #为授权码，不是邮箱密码
+        gitlab_rails['smtp_password'] = "5ae81bcdd09653ff" 
+        gitlab_rails['smtp_domain'] = "sina.com"
+        gitlab_rails['smtp_authentication'] = "login"
+        gitlab_rails['smtp_tls'] = false
+        #gitlab_rails['smtp_enable_starttls_auto'] = true 
+        gitlab_rails['smtp_openssl_verify_mode'] = 'none'
+        gitlab_rails['gitlab_email_enabled'] = true
+        #进入gitlab容器 gitlab-rails console 进入控制台
+        #ActionMailer::Base.delivery_method 应返回  :smtp
+        #ActionMailer::Base.smtp_settings  应返回相应的信息
+        #Notify.test_email('183618@qq.com','Test Page','This is test mail ').deliver_now
+        gitlab_rails['gitlab_email_from'] = "yema_no_reply@sina.com"
+        gitlab_rails['gitlab_email_display_name'] = "Gitlab for Yematech"
+        #此下配置不能省略，不然用户收不到邮件
+        gitlab_rails['gitlab_email_reply_to'] = "yema_no_reply@sina.com" 
+        gitlab_rails['gitlab_email_subject_suffix'] = ""
+        
+        #腾讯企业邮箱
+        #gitlab_rails['smtp_address'] = "smtp.exmail.qq.com"
+        #gitlab_rails['smtp_port'] = 25
+        #gitlab_rails['smtp_user_name'] = "no_reply@yematech.cn"
+        #gitlab_rails['smtp_password'] = "ganlXUHUI111125"
+        #gitlab_rails['smtp_domain'] = "exmail.qq.com"
+        #gitlab_rails['smtp_authentication'] = "login"
+        #gitlab_rails['smtp_tls'] = false
+        #gitlab_rails['smtp_enable_starttls_auto'] = false
+        #gitlab_rails['smtp_openssl_verify_mode'] = 'none'
+        #gitlab_rails['gitlab_email_enabled'] = true
+        #gitlab_rails['gitlab_email_from'] = "no_reply@yematech.cn"
+        #gitlab_rails['gitlab_email_display_name'] = "Gitlab for Yematech"
+        ##此下配置不能省略，不然用户收不到邮件
+        #gitlab_rails['gitlab_email_reply_to'] = "no_reply@yematech.cn"
+        #gitlab_rails['gitlab_email_subject_suffix'] = ""
 
 
-        #setup postgres
-        #gitlab_rails['db_adapter'] = "postgresql"
-        #gitlab_rails['db_database'] = "postgres_gitlab"
-        #gitlab_rails['db_username'] = "postgres_admin"
-        #gitlab_rails['db_password'] = "yema_gitlab_postgres"
-        #gitlab_rails['db_encoding'] = "utf8"
-        #gitlab_rails['db_host'] = "postgres"
-        #gitlab_rails['db_port'] = 5432
-        #停用内置的postgres
-        #postgresql['enable'] = false
-    ports:
-      - '18181:80'
-      - '8822:22'
-    healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost/users/sign_in"]
-      interval: 30s
-      timeout: 30s
-      retries: 5
-      start_period: 180s # 延长容器启动的宽限期
-    volumes:
-      #GITLAB_HOME需要指定，如果不指定，默认为空白字符串,为同目录的 .env文件中指定
-      - './gitlab/config:/etc/gitlab'
-      - './gitlab/logs:/var/log/gitlab'
-      - './gitlab/data:/var/opt/gitlab'
-      - '/etc/localtime:/etc/localtime:ro'
-    shm_size: '512m'
-    networks:
-      - gitlab_net 
+        #setup postgres
+        #gitlab_rails['db_adapter'] = "postgresql"
+        #gitlab_rails['db_database'] = "postgres_gitlab"
+        #gitlab_rails['db_username'] = "postgres_admin"
+        #gitlab_rails['db_password'] = "yema_gitlab_postgres"
+        #gitlab_rails['db_encoding'] = "utf8"
+        #gitlab_rails['db_host'] = "postgres"
+        #gitlab_rails['db_port'] = 5432
+        #停用内置的postgres
+        #postgresql['enable'] = false
+    ports:
+      - '18181:80'
+      - '8822:22'
+    volumes:
+      #GITLAB_HOME需要指定，如果不指定，默认为空白字符串,为同目录的 .env文件中指定
+      - './gitlab/config:/etc/gitlab'
+      - './gitlab/logs:/var/log/gitlab'
+      - './gitlab/data:/var/opt/gitlab'
+      - '/etc/localtime:/etc/localtime:ro'
+    shm_size: '512m'
 
 
 
