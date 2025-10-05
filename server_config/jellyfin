@@ -76,6 +76,23 @@ vainfo  # 查看是否支持
 sudo usermod -aG video $USER  # 加入video组
 sudo usermod -aG render $USER # 加入render组（部分系统需此步骤）
 
+
+如果vainfo不能运行
+ls -l /dev/dri
+
+# 尝试使用 render node (更常用)
+DRM_NODE=/dev/dri/renderD128 vainfo
+
+# 如果上一个失败，尝试使用 card node
+DRM_NODE=/dev/dri/card0 vainfo
+
+-----------------------------------------------------
+
+
+
+
+
+
 # 方案1：安装虚拟 X Server（推荐）
 sudo apt install xvfb  # Ubuntu/Debian
 xvfb-run vainfo       # 使用虚拟缓冲运行
@@ -83,6 +100,9 @@ xvfb-run vainfo       # 使用虚拟缓冲运行
 # 方案2：强制指定显示变量（仅测试用）
 export DISPLAY=:0     # 若本机有图形环境但被忽略
 vainfo
+
+
+
 
 方案2：NVIDIA GPU
 # docker-compose.yml
