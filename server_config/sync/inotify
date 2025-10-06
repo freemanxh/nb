@@ -1,0 +1,29 @@
+inotifywait
+
+修改监控句柄数达到上限
+cat /proc/sys/fs/inotify/max_user_watches
+
+echo 524288 | sudo tee /proc/sys/fs/inotify/max_user_watches
+
+echo "fs.inotify.max_user_watches=524288" | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
+
+
+
+1、实时监控某个目录的增删改操作
+
+inotifywait -m -r /home/user/docs \
+  -e create,delete,modify \
+  --format '%T %w%f 事件: %e' \
+  --timefmt '%Y-%m-%d %H:%M:%S'
+
+2、文件修改后自动备份（结合 rsync）
+#!/bin/bash
+WATCH_DIR="/home/user/project"
+BACKUP_DIR="backup@server:/backups/project"
+
+inotifywait -m -e close_write --format '%w%f' "$WATCH_DIR" --recursive |
+while read file; do
+    echo "检测到文件修改: $file，正在同步..."
+    rsync -avz "$WATCH_DIR/" "$BACKUP_DIR" --exclude='*.tmp'
+done
