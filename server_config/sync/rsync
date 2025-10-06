@@ -1,0 +1,146 @@
+1、rsync -avhP /home/user/Documents/ /backup/documents/
+-avhP —— 归档、详细、可读、显示进度、支持断点。
+
+2、同步到远程服务器（通过 SSH）
+rsync -avhP -e ssh /home/user/photos/ user@192.168.1.100:/backup/photos/
+
+3、删除目标多余文件（镜像同步）
+rsync -avh --delete /source/ /destination/
+
+4、排除文件
+rsync -avh --exclude-from='exclude.txt' /source/ /backup/
+cat exclude.txt
+*.tmp
+*.log
+node_modules/
+.DS_Store
+
+5、（模拟运行，不实际传输）
+rsync -avhn --delete /source/ /destination/
+
+6、同步时保留硬链接（适合备份）
+rsync -avhH /source/ /backup/
+ -H 保留硬链接（如 cp -al 创建的增量备份）
+
+7、cron
+# 每天凌晨 2 点备份
+0 2 * * * rsync -avh --delete /home/user/data/ /backup/data/ >> /var/log/backup.log 2>&1
+
+
+8、用 rsync 初始化大目录，再用 Syncthing 实时同步
+# 1. 先用 rsync 快速同步大量文件（节省 Syncthing 扫描时间）
+rsync -avhP /large_project/ user@desktop:/home/user/large_project/
+
+# 2. 再在 Syncthing 中添加该目录 → 后续小文件变更实时同步
+
+9、跨服务器同步（A → B）
+rsync -avz -e "ssh -p 2222" user@serverA:/data/ user@serverB:/backup/
+===========================================================================
+
+sudo mkdir -p /data/public /data/backup
+sudo chown -R nobody:nogroup /data/public /data/backup
+sudo chmod -R 755 /data/public
+sudo chmod -R 775 /data/backup
+
+#服务端
+/etc/rsyncd.conf
+port=873
+
+uid = nobody
+gid = nogroup
+use chroot = yes
+max connections = 10
+pid file = /var/run/rsyncd.pid
+lock file = /var/run/rsync.lock
+log file = /var/log/rsync.log
+timeout = 300
+dont compress = *.gz *.tgz *.zip *.z *.Z *.rpm *.deb *.jpg *.png *.gif
+
+# 模块1：公开只读镜像
+[public]
+    path = /data/public
+    comment = Public Read-Only Files
+    read only = yes
+    list = yes
+    auth users = 
+    hosts allow = 192.168.0.0/24
+    hosts deny = *
+
+# 模块2：需要认证的备份模块
+[backup]
+    path = /data/backup
+    comment = Private Backup Area
+    read only = no
+    list = yes
+    auth users = backupuser
+    secrets file = /etc/rsyncd.secrets #此文件必须为root:root 且chmod为600
+    hosts allow = 192.168.0.0/24, 10.0.0.0/8
+    hosts deny = *
+
+/etc/rsyncd.secrets文件中
+xuhui:Rgzdbsa_ZxY!2023_200
+
+
+------------------------------------------------
+sudo nano /etc/systemd/system/rsyncd.service
+[Unit]
+Description=rsync daemon
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=/usr/bin/rsync --daemon --config=/etc/rsyncd.conf
+PIDFile=/var/run/rsyncd.pid
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+
+
+sudo systemctl daemon-reload
+sudo systemctl enable rsyncd
+sudo systemctl start rsyncd
+
+------------------------------------------------------------------------
+客户端 
+#匿名访问（只读模块）同步到本地
+rsync -avh rsync://192.168.0.70/public/ ./local_copy/
+
+#认证访问（需用户名密码）
+rsync -avh --password-file=/path/to/passfile rsync://backupuser@192.168.0.70/backup/ /local/backup/
+
+rsync.password必须为root:root chmod为600,把远程的文件同步到本地
+rsync -avz --delete --password-file=/etc/rsync.password xuhui@192.168.0.200::gitlab_bak /data_sata/gitlab_bak
+
+/etc/rsync.password 文件中直接填入密码。 权限600
+Rgzdbsa_ZxY!2023_200
+
+========================================================================
+当服务端装不了rsyncd时。
+docker run -d -p 873:873 --restart=always -v /data_sata:/data_sata -v /home/xuhui/docker/rsyncd/rsyncd.conf:/etc/rsyncd.conf -v /home/xuhui/docker/rsyncd/rsyncd.secrets:/etc/rsyncd.secrets --name rsync  ubuntu_rsync:1
+
+ubuntu_rsync:1为自己生成
+
+Dockerfile
+
+FROM ubuntu:22.04
+EXPOSE 873
+RUN sed -i 's#http://archive.ubuntu.com/#http://mirrors.ustc.edu.cn/#' /etc/apt/sources.list
+RUN apt-get update --fix-missing 
+RUN apt-get install -y rsync
+CMD ["rsync","--no-detach","--daemon"]
+
+
+
+=====================================================================
+* * * * * 每分钟
+10 * * * * 第小时第10分钟执行一次任务
+0 1 * * * 第天1点执行一次任务 
+
+#cron
+*/1 * * * * rsync -avz --delete /data/hdd2/photos/ /data/hdd3/photos
+
+0 5 * * * rsync -avz --delete --password-file=/etc/rsync.password xuhui@192.168.0.200::gitlab_bak /data_sata/gitlab_bak
+
+#同一台机器
+rsync -avz --delete /data/hdd2/photos/ /data/hdd3/photos
