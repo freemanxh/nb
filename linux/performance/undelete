@@ -1,0 +1,25 @@
+1、作用
+PhotoRec：救“文件内容”（文件没了，但数据还在）
+TestDisk：救“磁盘结构”（分区没了，或系统进不去）
+
+2、安装
+sudo apt install testdisk
+
+3、最好用liveusb
+Live CD 推荐（usb）
+
+4、最佳实践流程
+# 1. 从 Live CD 启动
+# 2. 挂载外接硬盘用于存储恢复数据
+sudo mkdir /mnt/backup
+sudo mount /dev/sdc1 /mnt/backup
+
+# 3. 先用 PhotoRec 恢复文件
+sudo photorec
+# 选择磁盘 → Free space → 输出到 /mnt/backup/recovered
+
+# 4. 再用 TestDisk 修复分区
+sudo testdisk
+# 分析 → 恢复丢失分区 → Write
+
+# 5. 重启验证
