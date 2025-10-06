@@ -33,7 +33,8 @@ rsync -avhP /large_project/ user@desktop:/home/user/large_project/
 
 # 2. 再在 Syncthing 中添加该目录 → 后续小文件变更实时同步
 
-
+9、跨服务器同步（A → B）
+rsync -avz -e "ssh -p 2222" user@serverA:/data/ user@serverB:/backup/
 ===========================================================================
 
 sudo mkdir -p /data/public /data/backup
