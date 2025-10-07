@@ -1,0 +1,107 @@
+服务端配置
+port: 3260
+
+install targetcli
+ubuntu下：
+sudo apt install -y targetcli-fb
+
+sudo targetcli
+ 1：创建后端存储（Backstore）
+# 进入 backstores 目录
+/> /backstores/block create name=disk1 dev=/dev/vg_iscsi/lv_iscsi1
+如果没有lvm，则创建一个。
+# 假设你有一块空盘 /dev/sdb
+sudo pvcreate /dev/sdb
+sudo vgcreate vg_iscsi /dev/sdb
+sudo lvcreate -L 10G -n lv_iscsi1 vg_iscsi
+
+2：创建 iSCSI Target
+/> /iscsi create iqn.2025-04.com.example:storage.disk1
+
+3：为 Target 创建 LUN
+/> /iscsi/iqn.2025-04.com.example:storage.disk1/tpg1/luns create /backstores/block/disk1
+
+4：设置 ACL（允许哪些 Initiator 访问）
+/> /iscsi/iqn.2025-04.com.example:storage.disk1/tpg1/acls create iqn.2025-04.com.client:client1
+iqn.2025-04.com.client:client1是客户端的 IQN
+
+5：打开网络门户（Portal）
+/> /iscsi/iqn.2025-04.com.example:storage.disk1/tpg1/portals create 192.168.1.100
+
+ 6：保存并退出
+/> saveconfig
+/> exit
+配置保存在 /etc/target/saveconfig.json
+
+客户端配置
+1. 安装 iSCSI Initiator
+sudo apt install -y open-iscsi
+
+2. 查看或设置 Initiator 名称
+sudo nano /etc/iscsi/initiatorname.iscsi
+InitiatorName=iqn.2025-04.com.client:client1
+确保这个 IQN 与服务端 ACL 中设置的一致
+
+sudo systemctl restart iscsid
+
+3. 发现 Target
+sudo iscsiadm -m discovery -t st -p 192.168.1.100
+
+4. 登录（连接）Target
+sudo iscsiadm -m node -T iqn.2025-04.com.example:storage.disk1 -p 192.168.1.100 --login
+成功后，系统会识别出新设备，如 /dev/sdb
+
+检查是否连接成功：
+sudo iscsiadm -m session
+
+
+5. 查看新设备
+lsblk
+
+...
+
+写入fstab
+# 先获取 UUID
+blkid /dev/sdb1
+# 输出：/dev/sdb1: UUID="xxxx-xxxx" TYPE="xfs"
+
+# 编辑 fstab
+echo 'UUID=xxxx-xxxx /mnt/iscsi xfs _netdev 0 0' >> /etc/fstab
+必须加 _netdev，表示这是一个网络设备，需在网络就绪后挂载
+
+
+
+常用管理命令
+服务端（Target）
+
+命令	说明
+targetcli	进入配置界面
+targetcli ls	查看当前配置
+systemctl restart target	重启服务
+
+客户端（Initiator）
+命令	说明
+iscsiadm -m session	查看已连接的会话
+iscsiadm -m node -u	注销所有节点
+iscsiadm -m node --logout	登出 Target
+systemctl enable iscsid	开机自启 iscsi 服务
+
+命令	说明
+sudo iscsiadm -m session	查看当前会话
+sudo iscsiadm -m node --logout	登出所有 Target
+sudo iscsiadm -m node -U all	断开所有连接
+sudo systemctl enable open-iscsi	开机自启 iscsi 服务
+
+
+安全增强（可选）： 双向 CHAP 认证
+
+在服务端（targetcli 中）
+/> /iscsi/iqn.2025-04.com.example:storage.disk1/tpg1/acls/iqn.2025-04.com.client:client1 set auth userid=client_user, password=client_pass
+/> /iscsi/iqn.2025-04.com.example:storage.disk1/tpg1 set attribute authentication=1
+
+在客户端：
+编辑 /etc/iscsi/nodes/*/default 文件，设置：
+node.session.auth.authmethod = CHAP
+node.session.auth.username = client_user
+node.session.auth.password = client_pass
+然后重新发现并登录。
