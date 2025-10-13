@@ -1,0 +1,56 @@
+家庭 DNS 服务器
+
+    功能：广告过滤、加速域名解析
+    工具：Pi-hole（最流行！）
+    效果：全屋设备自动去广告（YouTube 除外）
+    资源占用极低，Pi Zero 2 W 都能跑
+
+
+
+树莓派
+
+开启ssh
+sudo apt-get install openssh-server
+sudo systemctl start ssh
+sudo systemctl enable ssh
+
+
+设置wifi
+sudo raspi-config
+ 选择 System Options → Wireless LAN
+ 输入国家代码（如 CN）
+输入 SSID 和密码
+完成后自动连接
+
+设置有线
+1. 查看当前连接名称
+nmcli connection show
+2. 设置静态 IP（以有线为例）
+# 修改有线连接（替换 YOUR_CONNECTION_NAME 为实际名称）
+sudo nmcli con mod "Wired connection 1" \
+  ipv4.addresses 192.168.1.100/24 \
+  ipv4.gateway 192.168.1.1 \
+  ipv4.dns "8.8.8.8,114.114.114.114" \
+  ipv4.method manual
+  
+  sudo nmcli con mod "Wired connection 1" \
+  ipv4.addresses 192.168.0.148/24 \
+  ipv4.gateway 192.168.0.1 \
+  ipv4.dns "192.168.0.1" \
+  ipv4.method manual
+  
+  
+修改无线：
+sudo nmcli con mod "MyWiFi" \
+  ipv4.addresses 192.168.1.101/24 \
+  ipv4.gateway 192.168.1.1 \
+  ipv4.dns "8.8.8.8" \
+  ipv4.method manual
+
+sudo nmcli con down "MyWiFi" && sudo nmcli con up "MyWiFi"
+  
+3. 重启连接生效
+sudo nmcli con down "Wired connection 1" && sudo nmcli con up "Wired connection 1"
+
+使用 nmap 扫描： 
+nmap -sn 192.168.1.0/24 | grep -i raspberry
