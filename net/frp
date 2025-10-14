@@ -56,11 +56,12 @@ kcpBindPort = 7000  # KCP协议端口（可选，加速UDP传输）
 auth.tokenSource.type = "file"  # 从文件读取token避免泄露
 auth.tokenSource.file.path = "/etc/frp/token"  # token文件路径（需chmod 600）
 
-# 管理面板（按需启用）
-webServer.addr = "0.0.0.0"
-webServer.port = 7500
-webServer.user = "admin"
-webServer.password = "your_strong_password"  # 务必修改！
+# Web 管理界面（可选）
+#[webServer]
+#addr = "0.0.0.0"
+#port = 7500
+#user = "admin"
+#password = "your_admin_password"
 
 # 端口安全控制（防止滥用）
 allowPorts = [
@@ -83,12 +84,15 @@ bindPort = 37370  # 监听客户端连接的端口
 auth.tokenSource.type = "file"  # 从文件读取token避免泄露
 auth.tokenSource.file.path = "/root/frp/frp/token"  # token文件路径（需chmod 600）
 
- # 管理面板（按需启用）
-#webServer.addr = "0.0.0.0"
-#webServer.port = 7500
-# webServer.user = "admin"
-# webServer.password = "your_strong_password"  # 务必修改！
-#
+
+# Web 管理界面（可选）
+#[webServer]
+#addr = "0.0.0.0"
+#port = 7500
+#user = "admin"
+#password = "your_admin_password"
+
+
  # 端口安全控制（防止滥用）
 allowPorts = [
    { start = 6000, end = 6700 },  # 允许映射的端口范围
@@ -112,6 +116,8 @@ serverPort = 7000  # 需与服务端bindPort一致
 # 身份验证（与服务器token文件内容相同）
 auth.tokenSource.type = "file"
 auth.tokenSource.file.path = "C:/frp/token"  # Windows路径示例
+
+user = "frpc_ym"
 
 # 场景1：暴露SSH服务（TCP直连）
 [[proxies]]
@@ -232,5 +238,58 @@ sudo journalctl -u frps.service -f
 # 或者查看最近的失败记录
 sudo journalctl -u frps.service --since "5 minutes ago"
 
+
+=========================================================================
+
+# HTTP 服务穿透
+[[proxies]]
+name = "web_http"
+type = "http"
+localIP = "127.0.0.1"
+localPort = 8080
+customDomains = ["your-domain.com"]
+
+# HTTPS 服务穿透
+[[proxies]]
+name = "web_https"
+type = "https"
+localIP = "127.0.0.1"
+localPort = 8443
+customDomains = ["your-domain.com"]
+
+# UDP 服务穿透
+[[proxies]]
+name = "dns"
+type = "udp"
+localIP = "127.0.0.1"
+localPort = 53
+remotePort = 8053
+
+
+1. 网络优化
+# 启用 TCP 多路复用
+transport.tcpMux = true
+transport.tcpMuxKeepaliveInterval = 30
+
+# 连接池配置
+transport.maxPoolCount = 10
+2. 压缩优化
+# 启用数据压缩
+[[proxies]]
+name = "web"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 8080
+remotePort = 8080
+useCompression = true
+3. 带宽限制
+# 限制带宽使用
+[[proxies]]
+name = "web"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 8080
+remotePort = 8080
+bandwidthLimit = "1MB"
 
 
