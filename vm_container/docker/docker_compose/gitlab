@@ -369,5 +369,83 @@ cp /home/yematech/docker/gitlab/config/gitlab*.* /nfs/$data_time
    'config.file' => "/var/opt/gitlab/prometheus/prometheus.yml"
  }
 
+
+
+
+
+
+
+
+=========================================================================================================================
+gitlab 恢复
+
+
+
+# === GitLab Docker 备份恢复笔记（优化版）===
+# 目标：将 GitLab 从旧实例（版本 13.5.4）的数据恢复到一个新的 Docker 容器中。
+
+# === Step 1: 准备工作（宿主机操作）===
+
+# 1. 强制版本匹配：
+# 必须使用与备份时完全一致的 GitLab 版本进行初始化，推荐版本号精确到小版本。
+# 示例：备份版本为 13.5.4，则目标镜像也必须是 gitlab/gitlab-ce:13.5.4
+
+# 2. 创建目录并拷贝关键配置文件：
+# /data/gitlab/conf 映射到 /etc/gitlab
+# /data/gitlab/data 映射到 /var/opt/gitlab (包含 backups)
+mkdir -p /data/gitlab/conf /data/gitlab/data/backups /data/gitlab/logs
+
+# 3. 拷贝核心配置文件（绝不能丢失）：
+# gitlab-secrets.json 包含数据库加密密钥，非常关键！
+cp /path/to/old/gitlab.rb /data/gitlab/conf/
+cp /path/to/old/gitlab-secrets.json /data/gitlab/conf/
+
+# 4. 拷贝备份文件：
+# 确保文件位于 Docker 容器映射的 backups 目录下。
+# 注意：在宿主机上，确保备份文件权限足够（例如 git 用户可读，如 600）。
+cp 1682571554_2023_04_27_gitlab_backup.tar /data/gitlab/data/backups/
+
+# 5. 启动容器（使用精确版本）：
+docker run -d \
+  --name gitlab \
+  --restart always \
+  -v /data/gitlab/conf:/etc/gitlab \
+  -v /data/gitlab/data:/var/opt/gitlab \
+  -v /data/gitlab/logs:/var/log/gitlab \
+  -p 80:80 -p 443:443 -p 22:22 \
+  gitlab/gitlab-ce:13.5.4
+
+# 6. 等待首次初始化完成：
+docker logs -f gitlab
+# 观察日志，直到看到 "GitLab is ready!" 或类似提示，确保数据库和配置已加载。
+
+# === Step 2: 进入容器进行恢复前的准备 ===
+docker exec -it gitlab /bin/bash
+
+# 1. （安全检查）验证权限和文件名：
+# cd /var/opt/gitlab/backups/
+# ls -l # 确保备份文件存在且属于 git:git，否则手动修正权限。
+# chown git:git 1682571554_2023_04_27_gitlab_backup.tar
+
+# 2. 停止核心进程（必须）：
+gitlab-ctl stop puma
+gitlab-ctl stop sidekiq
+
+# === Step 3: 执行恢复 ===
+# 注意：BACKUP 参数只需时间戳部分（即文件名去掉后缀和版本号）。
+# 备份文件名示例：1682571554_2023_04_27_13.5.4_gitlab_backup.tar
+gitlab-rake gitlab:backup:restore BACKUP=1682571554_2023_04_27
+
+# 恢复过程中会提示确认，输入 yes 继续。
+
+# === Step 4: 重启服务并验证 ===
+gitlab-ctl reconfigure  # （可选）确保所有配置应用到位
+gitlab-ctl restart     # 重启服务
+
+# 1. 验证：
+# 浏览网页登录，检查项目、用户、仓库、CI/CD 变量等是否完整。
+# 2. 查看日志：
+docker logs -f gitlab
+
  删除3天前的文件。
  find ./ -type f -mtime +3
