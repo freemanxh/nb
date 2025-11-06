@@ -1,3 +1,18 @@
+
+OIp=192.168.0.21
+IIp=192.168.122.102
+
+
+OPort=16379
+IPort=6379
+
+sudo iptables -t nat -A PREROUTING -p tcp -d ${OIp} --dport ${OPort} -j DNAT --to-destination ${IIp}:${IPort}
+sudo iptables -I FORWARD 1 -p tcp -d ${IIp} --dport ${IPort} -j ACCEPT
+sudo iptables -I FORWARD 1 -p tcp -s ${IIp} --sport ${IPort} -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+
+sudo netfilter-persistent save
+-----------------------------------------------------
 1、kvm 的网络有 nat 或 bridge
 
 python3 -m http.server 8001
