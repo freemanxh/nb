@@ -17,6 +17,8 @@ sudo iptables -t nat -A POSTROUTING -s 192.168.122.102 -d 192.168.122.102 -p tcp
 
 
 sudo netfilter-persistent save
+
+
 -----------------------------------------------------
 1、kvm 的网络有 nat 或 bridge
 
