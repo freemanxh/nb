@@ -23,3 +23,18 @@ exit 0
 
 给执行权限
 sudo chmod a+x /etc/rc.local
+
+
+
+=====================================================================================
+硕天
+pwrstat -pwrfail -delay 60 -active on -cmd /etc/pwrstatd-powerfail.sh -duration 1 -shutdown on
+
+
+#5分钟
+pwrstat -pwrfail -delay 300 -active on -cmd /etc/pwrstatd-powerfail.sh -duration 1 -shutdown on
+
+
+#systemctl status[restart] pwrstatd
+#pwrstat -pwrfail -delay 600 -active on -cmd /etc/pwrstatd-powerfail.sh -duration 1 -shutdown on
+#pwrstat -config
