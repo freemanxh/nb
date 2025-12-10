@@ -107,6 +107,10 @@ virsh net-edit default
 重启后，再运行 virsh net-dhcp-leases default 看看。
 
 或者，手动删除租约文件（先停止 libvirtd）： 
+
+通常下面这个执行一下，就有效
+sudo systemctl restart libvirtd
+
 sudo systemctl stop libvirtd
 sudo rm /var/lib/libvirt/dnsmasq/default.leases # 路径可能略有不同
 sudo systemctl start libvirtd
