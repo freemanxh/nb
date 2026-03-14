@@ -1,0 +1,4 @@
+1、docker下的客户端使用：
+docker run -it --rm mysql:8.2 mysql -u root -p -h 47.109.149.27
+
+2、
