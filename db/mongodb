@@ -1,0 +1,7 @@
+1、 登录
+docker exec -it mongo1 bash
+mongosh -u root -p 9kn2ogp82SjGiQGWko2GAokQMptpxW2p
+
+2、改mongodb的密码
+需要换库
+db.changeUserPassword("root", "9kn2ogp82SjGiQGWko2GAokQMptpxW2p")
