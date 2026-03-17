@@ -50,6 +50,9 @@ ym_db.yml
 # mysql,redis 999
 # elasticsearch,logstash,kibana 1000
 
+# 物理机优化：由于你使用的是 Elasticsearch，请确保宿主机执行了：
+# sysctl -w vm.max_map_count=262144
+
 
 # 日志
 #
