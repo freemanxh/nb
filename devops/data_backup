@@ -37,3 +37,45 @@
   恢复：
   docker run -it --rm -v ./mongo_backup:/mongo_backup mongo:6.0 bash -c 'mongorestore --host 192.168.0.44:27020 -uroot -p123456 --dir /mongo_backup --gzip --drop '
   
+---------------------------------------------------------------
+  备份：
+  docker run -it --rm -v ./mongo_backup:/mongo_backup mongo:6.0 bash -c 'mongodump --host 192.168.0.44:27017 -uroot -p123456 -o /mongo_backup --gzip' 
+  
+    备份命令（增加 --db 参数）：
+  docker run -it --rm -v ./mongo_backup:/mongo_backup mongo:6.0 bash -c 'mongodump \
+  --host 192.168.0.44:27017 \
+  -uroot -p123456 \
+  --db old_db \
+  --out /mongo_backup \
+  --gzip'  
+    
+  恢复：
+  docker run -it --rm -v ./mongo_backup:/mongo_backup mongo:6.0 bash -c 'mongorestore --host 192.168.0.44:27020 -uroot -p123456 --dir /mongo_backup --gzip --drop '
+  
+  #只修改数据库名
+  docker run -it --rm -v ./mongo_backup:/mongo_backup mongo:6.0 bash -c 'mongorestore \
+  --host 192.168.0.44:27020 \
+  -uroot -p123456 \
+  --gzip --drop \
+  --nsFrom "old_db.*" \
+  --nsTo "new_db.*" \
+  --dir /mongo_backup'
+  
+  #修改表名
+  docker run -it --rm -v ./mongo_backup:/mongo_backup mongo:6.0 bash -c 'mongorestore \
+  --host 192.168.0.44:27020 \
+  -uroot -p123456 \
+  --gzip --drop \
+  --nsFrom "my_db.old_collection" \
+  --nsTo "my_db.new_collection" \
+  --dir /mongo_backup'
+  
+  
+  #同时修改数据库名和表名
+  docker run -it --rm -v ./mongo_backup:/mongo_backup mongo:6.0 bash -c 'mongorestore \
+  --host 192.168.0.44:27020 \
+  -uroot -p123456 \
+  --gzip --drop \
+  --nsFrom "old_db.old_col" \
+  --nsTo "new_db.new_col" \
+  --dir /mongo_backup'
