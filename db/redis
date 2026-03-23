@@ -1,3 +1,17 @@
 1、客户端连接
 docker run --rm -it redis redis-cli -h 47.109.149.27 -a FtS3q4PJxGcY8kTW5KRgNeJ7XQySe3uW
 docker run --rm -it redis redis-cli -h 47.109.149.27 
+
+2、改密码
+2.1：redis-cli:
+config set requirepass "你的新密码"
+config rewrite
+
+2.2：
+redis.conf
+requirepass 你的新密码
+bind 0.0.0.0
+protected-mode yes   #只要设置了密码，开启保护模式是安全的
+
+2.3:
+sudo systemctl restart redis
