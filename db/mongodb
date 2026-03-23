@@ -1,7 +1,13 @@
 1、 登录
 docker exec -it mongo1 bash
 mongosh -u root -p 9kn2ogp82SjGiQGWko2GAokQMptpxW2p
+docker exec -it mongo1 mongosh -u root -p xxxxxxxxxxxx --authenticationDatabase admin
 
 2、改mongodb的密码
 需要换库
 db.changeUserPassword("root", "9kn2ogp82SjGiQGWko2GAokQMptpxW2p")
+
+如果发现改不了密码，需要把数据清理掉重来。
+rm -rf ./data/mongo/rs1 ./data/mongo/rs2 ./data/mongo/rs3 (删除宿主机对应的数据目录)
+mongod.key 的文件权限必须是 600（仅所有者可读写），否则 MongoDB 会因为权限太开放而拒绝启动。
+chmod 600 ./data/mongo/mongod.key
