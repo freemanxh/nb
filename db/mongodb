@@ -1,6 +1,6 @@
 1、 登录
 docker exec -it mongo1 bash
-mongosh -u root -p 9kn2ogp82SjGiQGWko2GAokQMptpxW2p
+mongosh -u root -p xxxxxxxxxxxx
 docker exec -it mongo1 mongosh -u root -p xxxxxxxxxxxx --authenticationDatabase admin
 
 2、改mongodb的密码
