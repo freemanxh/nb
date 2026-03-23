@@ -1,0 +1,21 @@
+1、java 服务端的docker 容器
+services:
+  app:
+    deploy:
+      resources:
+        limits:
+          memory: 40G  # 必须大于 JVM 的 32G ,Docker Limit: 18G 或 34G (略大于 JVM 的 Xmx)。
+
+
+-Xms32g
+-Xmx32g
+-XX:+UseG1GC
+-XX:G1HeapRegionSize=32M # 增加内存后，增大 Region 解决你之前日志里的 Humongous Allocation
+-XX:InitiatingHeapOccupancyPercent=35
+-XX:MaxGCPauseMillis=100
+
+-Xlog:gc:/app/logs/jvm/gc.log
+-XX:ErrorFile=/app/logs/ivm/err.log
+-XX:HeapDumpPath=/app/logs/jvm/heapdump.hprof
+-XX:+HeapDumpOnOutOfMemoryError
+-Dspring.profiles.active=docker
