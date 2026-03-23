@@ -1,4 +1,24 @@
 1、docker下的客户端使用：
 docker run -it --rm mysql:8.2 mysql -u root -p -h 47.109.149.27
 
-2、
+2、修改mysql root 密码，并可以远程登录
+2.1：在 MySQL 8.0+（包括 8.2）中，root@localhost 和 root@%（远程）是两个不同的用户定义。最稳妥的方法是创建一个允许从任何 IP 访问的 root 用户
+-- 创建远程 root 用户（如果已存在会报错，可跳过这一步直接执行 grant）
+CREATE USER 'root'@'%' IDENTIFIED BY '你的新密码';
+
+-- 授予所有数据库的所有权限，并允许该用户继续授权
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
+
+-- 如果你想使用旧版客户端（如旧版 Navicat）能连接，建议使用 mysql_native_password 插件
+ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY '你的新密码';
+
+-- 刷新权限使之生效
+FLUSH PRIVILEGES;
+
+2.2：
+修改 MySQL 配置文件（非常重要）
+打开配置文件（路径通常为 /etc/mysql/mysql.conf.d/mysqld.cnf 或 /etc/my.cnf）
+找到 bind-address 这一行，将其修改为 0.0.0.0
+bind-address = 0.0.0.0
+sudo systemctl restart mysql
+
