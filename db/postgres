@@ -1,0 +1,36 @@
+1、CREATE ROLE app_costing WITH LOGIN password '123456';
+
+2、CREATE DATABASE costing_regulation
+    OWNER app_costing
+    ENCODING 'UTF8'
+    LC_COLLATE 'en_US.UTF-8'
+    LC_CTYPE 'en_US.UTF-8'
+    TEMPLATE template0;
+
+
+192.168.0.38:5432
+POSTGRES_PASSWORD=123456
+POSTGRES_USER=postgres_admin
+POSTGRES_DB=postgres_db
+
+docker run -it --rm  postgres:15  psql -h <HOST> -p <PORT> -U <USER> -d <DATABASE>
+
+
+python连接:
+postgresql://app_user:MyP@ssw0rd!@localhost:5432/app_db
+
+
+python -m pip install psycopg2-binary
+pip install sqlalchemy psycopg2
+
+
+=============================================================
+CREATE ROLE app_ylj_parser WITH LOGIN password '123456';
+
+CREATE DATABASE ylj_parse
+    OWNER app_ylj_parser
+    ENCODING 'UTF8'
+    LC_COLLATE 'en_US.UTF-8'
+    LC_CTYPE 'en_US.UTF-8'
+    TEMPLATE template0;
+
