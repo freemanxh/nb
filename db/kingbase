@@ -1,0 +1,13 @@
+docker run -d --name kingbase -p 54321:54321 -v ./kingbase/data:/home/kingbase/data -e KB_PASSWORD=AbcdeF@123! --privileged --restart=unless-stopped kingbase_v009r001c002b0014_single_x86:v1
+
+
+docker run -d \
+  --name kingbase_v9 \
+  --privileged=true \
+  --restart always \
+  -p 54321:54321 \
+  -e KINGBASE_USER=system \
+  -e KINGBASE_PASSWORD=YourPassword123! \
+  -e KINGBASE_DB=testdb \
+  -v ./kingbase_data:/home/kingbase/userdata \
+  kingbase:v2
