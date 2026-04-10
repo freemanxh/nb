@@ -79,3 +79,16 @@
   --nsFrom "old_db.old_col" \
   --nsTo "new_db.new_col" \
   --dir /mongo_backup'
+
+
+
+------------------------------------------------------------------------------
+redis:
+docker exec redis redis-cli -a "FtS3q4PJxGcY8kTW5KRgNeJ7XQySe3uW" BGSAVE
+如何确认备份完成了？
+docker exec redis redis-cli -a "FtS3q4PJxGcY8kTW5KRgNeJ7XQySe3uW" info persistence
+rdb_bgsave_in_progress: 如果是 0，表示备份已完成；如果是 1，表示还在进行中。
+rdb_last_bgsave_status: 如果是 ok，表示备份成功。
+
+
+docker cp redis:/data/dump.rdb ./redis_backup.rdb
