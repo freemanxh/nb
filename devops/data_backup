@@ -82,6 +82,19 @@
 
 
 
+2.1 进入mongo1
+docker exec -it mongo1 bash
+mongosh -u root -p 123456
+
+show dbs
+db.stats()
+
+| 只删数据，保留表 | `db.collection.deleteMany({})` | 仅删除文档，保留索引 | 较难（需从备份恢复） |
+| 删表及数据 | `db.collection.drop()` | 删除文档、索引、元数据 | 极难（需从备份恢复） |
+| 删整个库 | `db.dropDatabase()` | 删除库下所有集合 | 极难（需从备份恢复） |
+
+
+
 ------------------------------------------------------------------------------
 redis:
 docker exec redis redis-cli -a "FtS3q4PJxGcY8kTW5KRgNeJ7XQySe3uW" BGSAVE
