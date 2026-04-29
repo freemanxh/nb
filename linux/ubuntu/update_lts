@@ -1,0 +1,23 @@
+1、找出所有被锁死（held back）的软件包，它们多半会导致跨版本升级失败：
+sudo apt-mark showhold
+
+输出为空代表状态正常；如果有返回结果，需要先解除对应软件包的锁定：
+sudo apt-mark unhold package_name
+
+2、
+sudo apt update
+sudo apt upgrade
+sudo snap refresh
+sudo apt full-upgrade
+sudo apt --purge autoremove
+
+
+sudo apt install update-manager-core
+检查/etc/update-manager/release-upgrades配置文件，确认更新策略设置为查找长期支持版： Prompt=lts
+
+3、
+sudo do-release-upgrade
+
+4、
+lsb_release -a
+uname -r
