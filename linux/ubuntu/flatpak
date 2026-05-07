@@ -1,0 +1,16 @@
+sudo apt install flatpak
+flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+# 配置国内镜像（可选，推荐）
+sudo flatpak remote-modify flathub --url=https://mirror.sjtu.edu.cn/flathub
+
+flatpak install sticky
+com.github.vixalien.sticky
+vlc
+mpv
+
+搜索包	flatpak search
+安装包	flatpak install
+列出已安装的包	flatpak list
+从 flatpakref 安装	flatpak install <package-name.flatpakref>
+卸载软件包	flatpak uninstall
+卸载未使用的运行时和包	flatpak uninstall --unused
