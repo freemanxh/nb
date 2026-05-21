@@ -16,15 +16,17 @@
 
 
 2、数据导入
-docker run --rm \
+  docker run --rm \
   -v $(pwd):/backup \
   -e PGPASSWORD='Hello@1234' \
   --entrypoint /opt/highgo/hgdb-see-4.5.8/bin/pg_restore \
   qiuchenjun/highgo:hgdb-see-4.5.8 \
-  -h 192.168.0.119 \
+  -h 192.168.0.2 \
   -p 5867 \
   -U highgo \
   -d pricing \
+  -O \
+  -x \
   -v \
   /backup/db_backup_20260521.dmp
 
