@@ -14,7 +14,23 @@
 
 
 
-2、进命令行
+
+2、数据导入
+docker run --rm \
+  -v $(pwd):/backup \
+  -e PGPASSWORD='Hello@1234' \
+  --entrypoint /opt/highgo/hgdb-see-4.5.8/bin/pg_restore \
+  qiuchenjun/highgo:hgdb-see-4.5.8 \
+  -h 192.168.0.119 \
+  -p 5867 \
+  -U highgo \
+  -d pricing \
+  -v \
+  /backup/db_backup_20260521.dmp
+
+
+
+3、进命令行
 docker run --rm -it --entrypoint bash qiuchenjun/highgo:hgdb-see-4.5.8
 export PGPASSWORD=Hello@1234
 psql -h 192.168.0.119 -p 5867 -U highgo -d pricing
