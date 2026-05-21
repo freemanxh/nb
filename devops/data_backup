@@ -16,7 +16,13 @@
   docker run -it --rm mysql:8.2 mysqldump -uroot -h192.168.0.22 -p123456 --all-databases > ./all.sql
 
   docker run -it --rm mysql:8.2 mysqldump -uroot -h192.168.0.22 -p123456 database_name > ./all.sql
-  恢复需要进入容器，同上
+  恢复
+      #倒一个数据库，已经有的
+      docker exec -i <你的MySQL容器名或ID> mysql -u<用户名> -p<密码> <数据库名> < all.sql  
+      #倒所有的数据库，全的
+      docker exec -i mysql_db mysql -uroot -p123456  < all.sql
+
+  进入容器，同上
   mysql 或 source
 
   压缩：
