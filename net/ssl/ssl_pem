@@ -90,19 +90,47 @@ acme.sh --install-cert -d *.smarte.cc \
 -r-------- 1 docker 1000  227 5月  29 10:46 key.pem
 =====================================================================
 
-3、自动登录续签（还没有通过）
+3、自动登录续签
 用户登录名称 
 
 acme@1163605441248015.onaliyun.com
 AccessKey ID xxxx
 AccessKey Secret xxxx
 
+3.1)
 export Ali_Key="<key>"
 export Ali_Secret="<secret>"
 
-./acme.sh --issue --dns dns_ali -d yematech.cc -d *.yematech.cc
+3.2)
+acme.sh --issue --force --dns dns_ali -d yematech.cc -d *.yematech.cc
 
-The Ali_Key and Ali_Secret will be saved in ~/.acme.sh/account.conf and will be reused when needed.
+3.3)
+acme.sh --install-cert -d yematech.cc -d *.yematech.cc \
+        --key-file /home/yematech/ssl/yematech.cc/key.pem \
+        --cert-file /home/yematech/ssl/yematech.cc/cert.pem \
+        --fullchain-file /home/yematech/ssl/yematech.cc/fullchain.pem \
+        --reloadcmd "systemctl reload nginx"
+
+
+
+
+
+
+
+
+
+--------------------------------------------------------------
+acme.sh --issue --force --dns dns_ali -d yematech.cc -d *.yematech.cc
+acme.sh --issue --force --dns dns_ali -d yematech.cn -d *.yematech.cn
+acme.sh --issue --force --dns dns_ali -d smarte.cc -d *.smarte.cc
+acme.sh --issue --force --dns dns_ali -d smarte.tech -d *.smarte.tech
+acme.sh --issue --force --dns dns_ali -d yemaland.cn -d *.yemaland.cn
+
+
+
+
+=======================================================================
+
 
 4、copy出相应的证书
 acme.sh --install-cert -d *.yematech.cc \
