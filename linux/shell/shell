@@ -27,3 +27,14 @@ do
         fi
         sleep 1
 done
+
+
+
+------------------------------------------------------------------------------------------------------
+数组循环
+DOMAINS=("yematech.cc" "yematech.cn" "smarte.cc" "smarte.tech" "yemaland.cn" )
+
+
+for domain in "${DOMAINS[@]}"; do
+...
+done
