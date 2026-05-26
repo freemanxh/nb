@@ -133,10 +133,13 @@ acme.sh --issue --force --dns dns_ali -d yemaland.cn -d *.yemaland.cn
 
 
 
-4、安装多个证书
+4、安装多个证书，并分发，重启
 #!/bin/bash
-DOMAINS=("yematech.cc" "yematech.cn" "smarte.cc" "smarte.tech" "yemaland.cn" )
+DOMAINS=("yematech.cc" "yematech.cn" "smarte.cc" "smarte.tech" "yemaland.cn")
 BASE_DIR="/home/yematech"
+
+REMOTE_IP=("192.168.0.60")
+REMOTE_DIR="/data/ssl"
 
 for domain in "${DOMAINS[@]}"; do
         echo "install $domain ing..."
@@ -146,10 +149,21 @@ $BASE_DIR/.acme.sh/acme.sh --install-cert -d $domain -d *.$domain \
         --cert-file $BASE_DIR/ssl/$domain/cert.pem \
         --fullchain-file $BASE_DIR/ssl/$domain/fullchain.pem
 
-
-
         echo "$domain installed successfully!"
 done
+
+for remote_ip in "${REMOTE_IP[@]}"; do
+        echo "copy to $remote_ip"
+        for domain in "${DOMAINS[@]}"; do
+                echo "copy $domain"
+                scp -r $BASE_DIR/ssl/$domain root@$remote_ip:$REMOTE_DIR/
+                ssh root@$remote_ip "chmod 444 $REMOTE_DIR/$domain/*"
+                ssh root@$remote_ip "chmod 400 $REMOTE_DIR/$domain/key.pem"
+        done
+        ssh root@$remote_ip "docker restart nginx"
+done
+
+echo "...the end..."
 
 =====================================================================
 
