@@ -132,6 +132,29 @@ acme.sh --issue --force --dns dns_ali -d yemaland.cn -d *.yemaland.cn
 =======================================================================
 
 
+
+4、安装多个证书
+#!/bin/bash
+DOMAINS=("yematech.cc" "yematech.cn" "smarte.cc" "smarte.tech" "yemaland.cn" )
+BASE_DIR="/home/yematech"
+
+for domain in "${DOMAINS[@]}"; do
+        echo "install $domain ing..."
+        mkdir -p "$BASE_DIR/ssl/$domain"
+$BASE_DIR/.acme.sh/acme.sh --install-cert -d $domain -d *.$domain \
+        --key-file $BASE_DIR/ssl/$domain/key.pem \
+        --cert-file $BASE_DIR/ssl/$domain/cert.pem \
+        --fullchain-file $BASE_DIR/ssl/$domain/fullchain.pem
+
+
+
+        echo "$domain installed successfully!"
+done
+
+=====================================================================
+
+
+
 4、copy出相应的证书
 acme.sh --install-cert -d *.yematech.cc \
 --key-file       /home/yematech/yematech_cc/nginx/key.pem  \
