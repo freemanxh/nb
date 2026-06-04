@@ -15,3 +15,13 @@ protected-mode yes   #只要设置了密码，开启保护模式是安全的
 
 2.3:
 sudo systemctl restart redis
+
+
+3、对redis在服务器上的调优。
+1） sudo vim /etc/sysctl.conf
+2）
+2.1）允许内核分配所有物理内存，防止 Redis 进行后台保存 (bgsave) 时因内存不足报错
+   vm.overcommit_memory = 1
+2.2）调大系统级别的全连接队列，防高并发下 Redis 拒绝网络连接
+   net.core.somaxconn = 1024
+3） sudo sysctl -p
