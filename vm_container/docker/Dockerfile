@@ -1,3 +1,24 @@
+1、把数据目录给改到其它的分区
+
+1)、systemctl stop docker
+2)、mkdir -p /data/docker
+# 使用 rsync 保证权限和属性不丢失地拷贝
+rsync -aP /var/lib/docker/ /data/docker/
+3)、/etc/docker/daemon.json
+{
+  "data-root": "/data/docker",
+  "log-driver": "local",
+  "log-opts": {
+    "max-size": "5m",
+    "max-file": "3"
+  }
+}
+4)、
+systemctl daemon-reload
+systemctl restart docker
+
+====================================================================
+
 制作Dockerfile时
 
 网络要翻墙
