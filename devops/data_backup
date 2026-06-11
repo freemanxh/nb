@@ -22,6 +22,26 @@
       #倒所有的数据库，全的
       docker exec -i mysql_db mysql -uroot -p123456  < all.sql
 
+
+  到全库：
+=========================================================
+# 1. 进入 MySQL 容器内部
+docker exec -it <容器名称或ID> /bin/bash
+
+# 2. 登录 MySQL
+mysql -u root -p
+
+# 3. 执行删除命令（推荐加上 IF EXISTS 防止报错）
+DROP DATABASE IF EXISTS schema_name;
+
+CREATE SCHEMA IF NOT EXISTS costing_base  
+DEFAULT CHARACTER SET utf8mb4 
+COLLATE utf8mb4_unicode_ci;
+
+=====================================================
+
+
+
   进入容器，同上
   mysql 或 source
 
