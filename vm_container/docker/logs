@@ -3,3 +3,6 @@ sudo find /var/lib/docker/containers/ -name "*-json.log" -exec ls -lh {} \;
 
 2、清除其中一个容器的文件
 sudo truncate -s 0 /var/lib/docker/containers/f2e02103b95d7f93c2683304ef71ec1fc5ce8df56c7087ac8e0e0ddb474ffc6d/f2e02103b95d7f93c2683304ef71ec1fc5ce8df56c7087ac8e0e0ddb474ffc6d-json.log
+
+3、清除所有的日志
+find /var/lib/docker/containers/ -name "*-json.log" -exec truncate -s 0 {} \;
