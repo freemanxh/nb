@@ -1,0 +1,58 @@
+一、备份
+
+1、stop docker nexus
+2、备份mapping出来的目录
+3、copy到安全的地方。
+
+
+二、恢复
+1、启一个同版本的nexus，docker-compose启动方法参数一样
+2、把备份目录换掉docker新mapping的新空目录
+3、重启docker nexus
+
+
+
+三、nexus3.yaml
+
+version: '3'
+services:
+  nexus3:
+    image: 'sonatype/nexus3'
+    container_name: nexus3
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
+    ports:
+      - '8081:8081'
+      - '8082:8082' #docker group
+      - '8083:8083' #docker local
+      - '8084:8084' #docker proxy
+    volumes:
+      - '/home/yematech/docker_data/nexus/nexus-data:/nexus-data'
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+
+四、nginx.yaml
+version: '3.9'
+services:
+  nginx_nexus:
+    image: 'nginx:latest'
+    container_name: 'nginx_nexus'
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
+    ports:
+      #- '28080:28080' #nexus web
+      #- '28081:28081' #nexus docker group
+        #- '28020:28020' #harbor web
+      - '28021:28021' #harbor 
+      - '28081:28081' #nexus web
+    volumes:
+      - '/home/yematech/docker_data/nginx/conf/nginx.conf:/etc/nginx/nginx.conf'
+      - '/home/yematech/docker_data/nginx/conf/conf.d:/etc/nginx/conf.d'
+      - '/home/yematech/docker_data/nginx/ssl:/ssl'
+      - '/home/yematech/docker_data/nginx/html:/usr/share/nginx/html'
+      - '/home/yematech/docker_data/nginx/log:/var/log/nginx'
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
