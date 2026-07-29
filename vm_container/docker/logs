@@ -29,6 +29,9 @@ find /var/lib/docker/containers/ -name "*-json.log" -exec truncate -s 0 {} \;
 3. sudo chmod 644 /etc/logrotate.d/docker-containers
 4. sudo logrotate -d /etc/logrotate.d/docker-containers   # 先推演确认
 
+5. 进行查看
+systemctl list-timers logrotate.timer
+
 
 改 daemon.json 根治
   
