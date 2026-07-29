@@ -6,3 +6,34 @@ sudo truncate -s 0 /var/lib/docker/containers/f2e02103b95d7f93c2683304ef71ec1fc5
 
 3、清除所有的日志
 find /var/lib/docker/containers/ -name "*-json.log" -exec truncate -s 0 {} \;
+
+
+
+
+================================================================================
+对没有初设日志的补救方案：
+1. truncate -s 0 /var/lib/docker/containers/9465a561adfdd2d1477bb7fd4fd92800e8037f0c0f4d697b4562f253c95ee098/9465a561adfdd2d1477bb7fd4fd92800e8037f0c0f4d697b4562f253c95ee098-json.log
+2. sudo tee /etc/logrotate.d/docker-containers > /dev/null << 'EOF'
+  /var/lib/docker/containers/*/*-json.log {
+      su root root
+      size 200M
+      rotate 3
+      copytruncate
+      compress
+      delaycompress
+      missingok
+      notifempty
+  }
+
+  EOF
+3. sudo chmod 644 /etc/logrotate.d/docker-containers
+4. sudo logrotate -d /etc/logrotate.d/docker-containers   # 先推演确认
+
+
+改 daemon.json 根治
+  
+  {
+   "registry-mirrors": ["https://docker.1ms.run/"],
+   "log-driver": "json-file",
+   "log-opts": { "max-size": "200m", "max-file": "3" }
+  }
