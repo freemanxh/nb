@@ -38,3 +38,10 @@ DOMAINS=("yematech.cc" "yematech.cn" "smarte.cc" "smarte.tech" "yemaland.cn" )
 for domain in "${DOMAINS[@]}"; do
 ...
 done
+
+
+--------------------------------------------------------------------------------------------------
+删除一定时间段的文件
+find . -type f -newermt "2026-01-01 00:00:00" ! -newermt "2026-06-01 00:00:00" -exec rm {} +
+
++的作用：一次性删除
