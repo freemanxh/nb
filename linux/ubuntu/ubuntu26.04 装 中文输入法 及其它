@@ -1,0 +1,26 @@
+# 1. 更新软件源
+sudo apt update
+
+# 2. 安装 Fcitx5 核心、拼音输入法引擎及 GTK/Qt 接口
+sudo apt install -y fcitx5 fcitx5-chinese-addons fcitx5-frontend-gtk3 fcitx5-frontend-qt5
+
+# 3. 安装中文字体（避免中文界面乱码或出现方块）
+sudo apt install -y fonts-noto-cjk
+
+
+im-config -n fcitx5
+
+
+sudo nano /etc/environment
+
+GTK_IM_MODULE=fcitx
+QT_IM_MODULE=fcitx
+XMODIFIERS=@im=fcitx
+
+sudo reboot
+# 安装 Fcitx5 的五笔/码表支持
+sudo apt update
+sudo apt install -y fcitx5-table-wubi fcitx5-table
+
+
+
