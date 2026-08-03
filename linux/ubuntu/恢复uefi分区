@@ -1,0 +1,37 @@
+## 如果正常情况下
+sudo vim /etc/default/grub
+
+GRUB_DISABLE_OS_PROBER=false
+
+sudo apt update && sudo apt install os-prober -y
+
+sudo os-prober
+
+sudo update-grub
+
+sudo reboot
+
+##如果没有uefi分区。
+在linux中
+[ -d /sys/firmware/efi ] && echo "UEFI Mode" || echo "Legacy Mode"
+确认是uefi
+
+sudo fdisk -l 
+
+--------------------------------------
+diskpart
+select disk 0
+select partition 2
+shrink desired=500 minimum=500
+create partition efi
+format quick fs=fat32 label="System"
+assign letter=G
+
+list volume
+
+bcdboot C:\Windows /s G: /f UEFI
+
+sudo apt update
+sudo apt install --reinstall grub-efi-amd64 os-prober -y
+sudo os-prober
+sudo update-grub
