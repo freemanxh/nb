@@ -488,3 +488,11 @@ sudo ufw reload
 
 sudo adduser rdpuser
 
+
+----------------------------------------------------------
+
+使自带的共享生效
+sudo systemctl status gone-remote-desktop
+sudo grdctl --system rdp set-credentials freeman ganlxuhui
+sudo systemctl restart gnome-remote-desktop
+
