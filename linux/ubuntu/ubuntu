@@ -483,6 +483,11 @@ sudo systemctl enable --now xrdp
 sudo adduser xrdp ssl-cert
 sudo systemctl restart xrdp
 
+
+
+再加一道可选的保险：/etc/gdm3/custom.conf 里设 WaylandEnable=false，这样万一哪天手滑又在物理控制台登了，至少走 Xorg 而不是 Wayland。
+
+
 sudo ufw allow 3389/tcp
 sudo ufw reload
 
