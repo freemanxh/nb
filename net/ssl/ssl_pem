@@ -101,6 +101,7 @@ AccessKey Secret xxxx
 export Ali_Key="<key>"
 export Ali_Secret="<secret>"
 
+
 3.2)
 acme.sh --issue --force --dns dns_ali -d yematech.cc -d *.yematech.cc
 
@@ -112,19 +113,31 @@ acme.sh --install-cert -d yematech.cc -d *.yematech.cc \
         --reloadcmd "systemctl reload nginx"
 
 
-
-
-
-
-
-
-
 --------------------------------------------------------------
 acme.sh --issue --force --dns dns_ali -d yematech.cc -d *.yematech.cc
 acme.sh --issue --force --dns dns_ali -d yematech.cn -d *.yematech.cn
 acme.sh --issue --force --dns dns_ali -d smarte.cc -d *.smarte.cc
 acme.sh --issue --force --dns dns_ali -d smarte.tech -d *.smarte.tech
 acme.sh --issue --force --dns dns_ali -d yemaland.cn -d *.yemaland.cn
+
+
+acme.sh --install-cert -d yematech.cc -d *.yematech.cc \
+        --key-file /home/yematech/ssl/yematech.cc/key.pem \
+        --cert-file /home/yematech/ssl/yematech.cc/cert.pem \
+        --fullchain-file /home/yematech/ssl/yematech.cc/fullchain.pem \
+
+
+-------------------------------------------------
+见最后
+url_name=yematech.cc
+acme.sh --issue --force --dns dns_ali -d $url_name -d *.$url_name
+
+rm -rf /home/yematech/ssl/$url_name/
+mkdir -p /home/yematech/ssl/$url_name/
+acme.sh --install-cert -d $url_name -d *.$url_name \
+        --key-file /home/yematech/ssl/$url_name/key.pem \
+        --cert-file /home/yematech/ssl/$url_name/cert.pem \
+        --fullchain-file /home/yematech/ssl/$url_name/fullchain.pem 
 
 
 
@@ -180,3 +193,54 @@ acme.sh --install-cert -d *.yematech.cc \
 
 5、校验证书
 openssl x509 -noout -dates -in ./cert.pem
+
+
+-----------------------------------------------------------------------
+cat make_https.sh 
+#!/bin/bash 
+set -euo pipefail  # 增加安全检查：遇错停止、未定义变量报错
+
+if [ $# -lt 2 ]; then
+        echo "用法: $0 <continue|build|all> <域名>" >&2
+        exit 1
+fi
+
+
+action="$1"
+url_name="$2"
+
+case "$action" in 
+        continue|build|all)
+                ;;
+        *)
+
+        echo "错误:第一个参数必须是continue,build或all,收到:'$action'" >&2
+        exit 1
+        ;;
+esac
+echo "$url_name"
+
+SSL_DIR="/home/yematech/ssl/${url_name}"
+
+# 1. 签发证书（去掉 --force，让 acme.sh 自动管理续期）
+# 如果是首次运行或确实需要强制重签，再手动加 --force
+if [[ "$action" == "continue" || "$action" == "all" ]]; then
+~/.acme.sh/acme.sh --issue --force \
+    --dns dns_ali \
+    -d "${url_name}" \
+    -d "*.${url_name}"
+fi
+
+# 2. 创建目录（安全方式，无需 rm -rf）
+mkdir -p "${SSL_DIR}"
+
+# 3. 安装证书并自动重载 Nginx
+~/.acme.sh/acme.sh --install-cert \
+    -d "${url_name}" \
+    -d "*.${url_name}" \
+    --key-file       "${SSL_DIR}/key.pem" \
+    --cert-file      "${SSL_DIR}/cert.pem" \
+    --fullchain-file "${SSL_DIR}/fullchain.pem" 
+    #--reloadcmd      "nginx -s reload"  # ← 关键：确保证书生效后服务自动重载
+openssl x509 -noout -dates -in ${SSL_DIR}/cert.pem
+#echo "✅ SSL 证书已更新: ${SSL_DIR}"
