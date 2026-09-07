@@ -1,0 +1,21 @@
+安装SageAttention
+1、需要先查询基础信息。
+用comfy自带的python，如（D:\dev\ComfyUI_windows_portable\python_embeded>）
+命令：.\python.exe -c "import sys, torch;print('CUDA:',torch.version.cuda); print('PyTorch:', torch.__version__); print('Python:', sys.version.split()[0])"
+出现类似以下信息。
+CUDA: 13.0
+PyTorch: 2.13.0+cu130
+Python: 3.13.14
+
+2、到这个网页中下载相应的版本。
+https://github.com/wildminder/AI-windows-whl#sageattention
+安装命令：.\python.exe -s -m pip install 轮子的绝对路径。
+
+3、还是同一个网页，查找相应的安装版本triton，这个是sageattention的依赖
+安装命令：.\python.exe -m pip install -U "triton-windows<3.6" -i https://mirrors.aliyun.com/pypi/simple
+
+4、需要在启动的脚本中。比如把run_nvidia_gpu.bat 复制为 run_nvidia_gpu_sage_attention.bat，在命令后面增加 --use-sage-attention
+
+5、如果--use-sage-attention报错，把相同版本的python中的include 目录与libs目录全copy过来overwrite
+
+6、--fast fp16_accumulation 后面研究。
