@@ -1,0 +1,4 @@
+start.sh
+
+set GITHUB_ENDPOINT=https://mirror.ghproxy.com/https://github.com
+.\python_embeded\python.exe -s ComfyUI\main.py --windows-standalone-build --use-sage-attention --enable-manager
