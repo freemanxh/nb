@@ -1,0 +1,24 @@
+安装manager (之装描述文件已经自带)
+.\python_embeded\python.exe -m pip config set global.index-url https://pypi.org/simple
+.\python_embeded\python.exe -m pip install -r .\ComfyUI\manager_requirements.txt
+
+使用：在启动的批处理文件中增加：--enable-manager
+右上方：Manager
+Custom Nodes Manager #第三方节点，全部扩展节点，search ，install
+Install Missing Custom Nodes #检查确失的节点
+
+
+检查版本冲突：.\python_embeded\python.exe -m pip check
+可以通过这种方式强制安装：.\python_embeded\python.exe -m pip install numpy==1.26.4 --force-reinstall
+
+
+安装第三方节点
+
+一共三种方法：
+1、用ComfyUI官方的Manager（管理器），一键安装。
+2、下载节点包，放到 custom_nodes 文件夹下面，然后 pip install -r requirements.txt
+3、在文件夹 custom_nodes 下面，git clone 节点GitHub链接 ，然后 pip install -r requirements.txt
+三种方法对比：
+Manager。最方便，后续更新也是一键更新。
+自己下载。后续更新不方便，需要删除节点包，重新把新的放进去，还要手动 pip install -r requirements.txt
+GitHub clone。后续更新需要git pull，手动 pip install -r requirements.txt
