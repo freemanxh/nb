@@ -1,0 +1,35 @@
+1、安装ComfyUI Desktop
+2、视频模型三件套
+Wan2.2-T2V-14B GGUF量化版
+  High/Low Noise两个文件（Q3_K_S约6GB/个）
+VAE: wan_2.1_vae.safetensors
+LoRA: Wan2.2-Lighting 新版4步（high/low)
+分别放入models 下 unet/vae/loras目录
+3、安装节点
+ComfyUI-GGUF #加载GGUF量化模型
+ComfyUI-VideoHelperSuite(VHS) #视频读写/切片
+ComfyUI-KJNodes  #多段交叉淡入转场
+ComfyUI-Frame-Interpolation(RIFE) #补帧
+4、载入工作流，并设置参数
+480x832 (8GB显卡)，  81-121帧（5-7.5秒/段）
+步数：4步（Lightning LoRA加速）
+5、分段生成视频 
+提示词输入描述
+Queue按钮开始生成。
+6、多段拼接
+方式一：KJNodes的CrossFadeImages交叉淡入
+方式二：ffmpeg xfade滤镜流式拼接（大工程推荐）
+每段之间加0.5秒淡入淡出转场。
+7、RIFE补帧更顺滑
+用RIFE VFI节点，multiplier设为2
+把16fps补帧到32fps
+8、字幕与配音
+字幕：ffmpeg烧录ASS中文字幕（白字黑描边）
+配音：Edge-TTS在线全成男声旁白
+用ffmpeg把音频混入视频音轨
+
+总结：
+分辨率480x832|帧率16fps
+每段81-121帧|步数4步
+1分钟=分段生成+交叉淡入拼接+补帧
++中文字幕+配音，即可导出成片
