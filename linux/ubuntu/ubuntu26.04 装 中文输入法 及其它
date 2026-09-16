@@ -20,7 +20,7 @@ XMODIFIERS=@im=fcitx
 sudo reboot
 # 安装 Fcitx5 的五笔/码表支持
 sudo apt update
-sudo apt install -y fcitx5-table-wubi fcitx5-table
+sudo apt install -y fcitx5-table-wubi98 fcitx5-table
 
 
 
