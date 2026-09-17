@@ -1,0 +1,68 @@
+1. sudo apt update && sudo apt upgrade -y
+sudo apt install -y git git-lfs ffmpeg libgl1 libglib2.0-0 \
+  libsm6 libxrender1 libxext6 python3 python3-pip python3-venv
+
+2. ubuntu-drivers devices
+sudo apt install nvidia-driver-580 -y
+sudo reboot
+
+3. nvidia-smi
+输出中 Driver Version 应 ≥ 570，CUDA Version 显示 13.0 左右即满足要求
+
+----------------------------------------------------------------------------
+4. 克隆 ComfyUI 仓库
+git clone https://github.com/Comfy-Org/ComfyUI.git
+cd ComfyUI
+
+5. 创建并激活虚拟环境 
+python3 -m venv venv
+source venv/bin/activate
+
+6. 安装 PyTorch（CUDA 13 版本）
+pip install torch torchvision torchaudio \
+  --index-url https://download.pytorch.org/whl/cu130
+
+7. 安装 ComfyUI 依赖 
+pip install -r requirements.txt
+
+8.  安装 ComfyUI-Manager
+cd custom_nodes
+git clone https://github.com/Comfy-Org/ComfyUI-Manager comfyui-manager
+cd comfyui-manager
+pip install -r requirements.txt
+cd ../..
+
+9. 启动时加 --enable-manager
+python3 main.py --listen 0.0.0.0 --enable-manager
+
+10. 后台运行
+# 使用 screen
+screen -S comfyui
+source ~/ComfyUI/venv/bin/activate
+python3 ~/ComfyUI/main.py --listen
+# 按 Ctrl+A 然后按 D 脱离，ComfyUI 继续在后台运行
+
+11. 可能要安装以下模块
+pip install PyOpenGL PyOpenGL_accelerate
+
+
+12. python3.13
+sudo apt install -y python3.13 python3.13-venv
+cd ~/ai/ComfyUI
+mv venv venv.bak314
+python3.13 -m venv venv
+source venv/bin/activate
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
+pip install -r requirements.txt
+pip install -r manager_requirements.txt
+python main.py --listen 0.0.0.0
+
+
+4. 放置第一个模型试试出图
+把 SDXL 或 Flux 的 checkpoint 放到 models/checkpoints/，在 WebUI 里选默认工作流跑一张 512×512 的图，确认端到端链路（模型加载 → 采样 → VAE 解码 → 输出）没有问题。
+
+
+
+
+
+
