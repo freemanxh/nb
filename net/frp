@@ -212,13 +212,17 @@ frpc:
 /etc/systemd/system/frpc.service 
 [Unit]
 Description=frpc daemon
-After=network.target
+After=network.target network-online.target
+Wants=network-online.target
 
 [Service]
 Type=simple
+User=xuhui
+WorkingDirectory=/home/xuhui/apps/frp
 ExecStart=/home/yematech/frp/frp/frpc -c /home/yematech/frp/frp/frpc.toml
 Restart=always
 RestartSec=5
+RestartPreventExitStatus=SIGKILL
 
 [Install]
 WantedBy=multi-user.target
