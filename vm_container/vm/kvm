@@ -222,6 +222,26 @@ virt-install \
   --noautoconsole
 
 
+
+
+######################################################################
+#安装统信uos20
+virt-install \
+    --virt-type kvm \
+    --name uos-apps \
+    --ram 20480 \
+    --vcpus 8 \
+    --os-variant="debian10" \
+    --cpu host-passthrough,cache.mode=passthrough \
+    --disk path=/kvm/uos-20-apps.qcow2,size=60,bus=virtio,format=qcow2 \
+    --network bridge=br0,model=virtio \
+    --graphics vnc,password=654321,port=5910,listen=0.0.0.0 \
+    --extra-args="console=tty0" \
+    --video virtio \
+    --location /home/yematech/uos-server-20-1070e-amd64-20260320-1055.iso \
+    --force
+
+
 #####################################################################
 #安装centos7.9
 virt-install \
