@@ -226,6 +226,7 @@ virt-install \
 
 ######################################################################
 #安装统信uos20
+# server
 virt-install \
     --virt-type kvm \
     --name uos-apps \
@@ -241,6 +242,20 @@ virt-install \
     --location /home/yematech/uos-server-20-1070e-amd64-20260320-1055.iso \
     --force
 
+ # desktop
+virt-install \
+    --virt-type kvm \
+    --name uos-desktop \
+    --ram 16384 \
+    --vcpus 4 \
+    --os-variant=debian11 \
+    --cpu host \
+    --disk path=/kvm/uos-20-desktop.qcow2,size=100,bus=virtio,format=qcow2 \
+    --network bridge=br0,model=virtio \
+    --graphics vnc,password=654321,port=5910,listen=0.0.0.0 \
+    --video virtio \
+    --cdrom /home/yematech/uos_desktop.iso \
+    --force
 
 #####################################################################
 #安装centos7.9
