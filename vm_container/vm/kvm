@@ -350,7 +350,7 @@ sudo virt-install \
   --cdrom /var/lib/libvirt/images/win10.iso \
   --disk path=/kvm/win10_1.qcow2,size=100,format=qcow2,bus=virtio,cache=writeback \
   --disk path=/var/lib/libvirt/images/virtio-win.iso,device=cdrom \
-  --network network=default,model=virtio \
+  --network network=default,model=virtio,listen=0.0.0.0 \
   --graphics vnc,password=654321,port=5908 \
   --video qxl \
   --input type=tablet \
