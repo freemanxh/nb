@@ -44,13 +44,23 @@ network:
 ========================================================================================
 
 
-sudo apt install -y qemu-kvm libvirt-daemon-system virtinst libvirt-clients bridge-utils
+#sudo apt install -y qemu-kvm libvirt-daemon-system virtinst libvirt-clients bridge-utils
+#新版且装win友好 ovmf swtpm-tools 是win11必须的
+sudo apt install -y qemu-kvm libvirt-daemon-system libvirt-clients virtinst \
+    bridge-utils cpu-checker ovmf swtpm swtpm-tools virtio-win
 
 sudo systemctl enable --now libvirtd
-sudo systemctl start libvirtd
+sudo systemctl enable --now libvirtd.socket
+#sudo systemctl start libvirtd
 
 sudo usermod -aG kvm $USER
 sudo usermod -aG libvirt $USER
+
+sudo virsh net-start default
+sudo virsh net-autostart default
+
+
+装完可以用 `virt-host-validate` 跑一遍完整健康检查，确认所有项 OK
 
 -----------------------------------------------------------
 
@@ -326,6 +336,30 @@ virt-install \
 --disk path=/data/kvm/win10/win10.qcow2,size=120,format=qcow2 \
 --network bridge=br0 \
 --graphics vnc,password=654321,port=5902,listen=0.0.0.0
+
+
+
+安装win10 新
+sudo virt-install \
+  --virt-type kvm \
+  --name win10_1 \
+  --memory 16384 \
+  --vcpus 2 --cpuset=0,6 \
+  --cpu host-passthrough,cache.mode=passthrough \
+  --os-variant win10 \
+  --cdrom /var/lib/libvirt/images/win10.iso \
+  --disk path=/kvm/win10_1.qcow2,size=100,format=qcow2,bus=virtio,cache=writeback \
+  --disk path=/var/lib/libvirt/images/virtio-win.iso,device=cdrom \
+  --network network=default,model=virtio \
+  --graphics vnc,password=654321,port=5908 \
+  --video qxl \
+  --input type=tablet \
+  --noautoconsole \
+  --autostart
+
+
+如果要装win11 
+--boot uefi --tpm backend.type=emulator,backend.version=2.0
 
 
 #安装好后
