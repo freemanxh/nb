@@ -267,6 +267,10 @@ virt-install \
     --cdrom /home/yematech/uos_desktop.iso \
     --force
 
+正常使用过程中。
+把graphics 改为spice
+装驱动，效果更好
+
 #####################################################################
 #安装centos7.9
 virt-install \
