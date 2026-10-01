@@ -325,6 +325,23 @@ opkg update && opkg install luci-i18n-base-zh-cn
 
 
 #######################################################################
+
+windows中配置vcpu
+ <vcpu placement='static'>4</vcpu> 
+ <cputune>
+    <vcpupin vcpu='0' cpuset='1'/>
+    <vcpupin vcpu='1' cpuset='7'/>
+    <vcpupin vcpu='2' cpuset='2'/>
+    <vcpupin vcpu='3' cpuset='8'/>
+    <emulatorpin cpuset='0,6'/>
+  </cputune>
+  <cpu mode='host-passthrough' check='none' migratable='on'>
+    <topology sockets='1' cores='2' threads='2'/>
+    <cache mode='passthrough'/>
+    <feature policy='require' name='topoext'/>
+  </cpu>
+
+---------------------------------------------------------------------
 #安装windows  ubuntu22.04 server 测试通过
 virt-install \
 --virt-type kvm \
