@@ -1,4 +1,25 @@
 
+
+
+1. curl -O https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-latest-Linux-x86_64.sh
+2. bash Miniconda3-latest-Linux-x86_64.sh
+3. source ~/.bashrc
+4. conda --version
+
+5. conda config --set auto_activate_base false
+6. 
+conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/
+conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
+conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge/
+conda config --set show_channel_urls yes
+
+
+
+
+=======================================================================================
+
+
+
 1、conda 安装
 
 下载:
