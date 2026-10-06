@@ -62,7 +62,38 @@ python main.py --listen 0.0.0.0
 把 SDXL 或 Flux 的 checkpoint 放到 models/checkpoints/，在 WebUI 里选默认工作流跑一张 512×512 的图，确认端到端链路（模型加载 → 采样 → VAE 解码 → 输出）没有问题。
 
 
+========================================================================
+增加为服务
+/etc/systemd/system/comfyui.service
 
+[Unit]
+Description=comfyui Service
+After=network.target network-online.target
+Wants=network-online.target
+StartLimitBurst=3
+StartLimitIntervalSec=60
+
+[Service]
+Type=simple
+User=xuhui
+WorkingDirectory=/home/xuhui/ai/ComfyUI
+ExecStart=/home/xuhui/ai/ComfyUI/venv/bin/python main.py --listen 0.0.0.0 --use-sage-attention
+Restart=on-failure
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+StandardOutput=journal
+StandardError=journal
+RestartPreventExitStatus=SIGKILL
+
+
+------------------------------------------
+sudo systemctl daemon-reload
+sudo systemctl restart comfyui
+sudo systemctl status comfyui
+journalctl -u comfyui -n 50 --no-pager
+
+[Install]
+WantedBy=multi-user.target
 
 
 
