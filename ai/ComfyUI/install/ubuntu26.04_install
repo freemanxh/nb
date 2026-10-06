@@ -85,15 +85,17 @@ StandardOutput=journal
 StandardError=journal
 RestartPreventExitStatus=SIGKILL
 
+[Install]
+WantedBy=multi-user.target
+
+
 
 ------------------------------------------
 sudo systemctl daemon-reload
+sudo systemctl enable comfyui
 sudo systemctl restart comfyui
 sudo systemctl status comfyui
 journalctl -u comfyui -n 50 --no-pager
-
-[Install]
-WantedBy=multi-user.target
 
 
 
