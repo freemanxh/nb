@@ -49,6 +49,10 @@ network:
 sudo apt install -y qemu-kvm libvirt-daemon-system libvirt-clients virtinst \
     bridge-utils cpu-checker ovmf swtpm swtpm-tools virtio-win
 
+ubuntu26.04:
+sudo apt install -y qemu-system-x86 libvirt-daemon-system libvirt-clients \
+    virtinst bridge-utils cpu-checker ovmf swtpm swtpm-tools
+
 sudo systemctl enable --now libvirtd
 sudo systemctl enable --now libvirtd.socket
 #sudo systemctl start libvirtd
