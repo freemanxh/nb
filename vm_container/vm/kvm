@@ -346,6 +346,14 @@ windows中配置vcpu
   </cpu>
 
 ---------------------------------------------------------------------
+
+给vm增加声音
+<sound mode='ich9'>
+	<codec type='output'/>
+</sound>
+
+
+
 #安装windows  ubuntu22.04 server 测试通过
 virt-install \
 --virt-type kvm \
